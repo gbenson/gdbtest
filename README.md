@@ -1,2 +1,1 @@
-# meringue
-Stuff for testing GDB in containers
+**P42**—containerized GDB testsuite runner
