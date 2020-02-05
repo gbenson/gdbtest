@@ -1,1 +1,1 @@
-**P42**—containerized GDB testsuite runner
+**gdbtest**—containerized GDB testsuite runner
