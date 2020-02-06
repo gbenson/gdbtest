@@ -3,7 +3,7 @@ LABEL maintainer="Gary Benson <gbenson@redhat.com>"
 
 RUN\
  dnf -y update &&\
- dnf -y install 'dnf-command(builddep)' 'dnf-command(download)' &&\
+ dnf -y install 'dnf-command(builddep)' 'dnf-command(download)' rpm-build &&\
  dnf -y builddep gdb &&\
  dnf clean all&&\
  useradd -r --no-log-init -mb/ gdbtest
