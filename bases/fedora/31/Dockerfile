@@ -6,7 +6,7 @@ RUN\
  dnf -y install 'dnf-command(builddep)' 'dnf-command(download)' rpm-build &&\
  dnf -y builddep gdb &&\
  dnf clean all&&\
- useradd -r --no-log-init -mb/ gdbtest
+ useradd -r --no-log-init -md/gdbtest gdbtest
 
 WORKDIR /gdbtest
 #USER gdbtest
