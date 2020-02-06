@@ -9,9 +9,9 @@ RUN\
  useradd -r --no-log-init -mb/ gdbtest
 
 WORKDIR /gdbtest
-USER gdbtest
-RUN\
- dnf -y download --source gdb &&\
- rpm -ivh gdb-*-*.src.rpm &&\
- rm -f gdb-*-*.src.rpm&&\
- dnf clean all
+#USER gdbtest
+#RUN\
+# dnf -y download --source gdb &&\
+# rpm -ivh gdb-*-*.src.rpm &&\
+# rm -f gdb-*-*.src.rpm&&\
+# dnf clean all
