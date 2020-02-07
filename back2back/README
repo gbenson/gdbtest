@@ -1,0 +1,8 @@
+VM 1. Installed Fedora-Workstation-Live-x86_64-31-1.9.iso in VM, no
+      special choices.  It didn't reboot (
+[  OK  ] Reached target Reboot.
+[72550.060803] printk: shutdown: 12 output lines suppressed due to ratelimiting
+      ) so I had to Force off"
+      => Screenshot_fedora31_2020-02-07_11:39:45.png
+      => /var/lib/libvirt/images/fedora31.qcow2.202002071153
+      [cp -a --reflink=auto fedora31.qcow2{,.$(date --utc +%Y%m%d%H%M)}]
