@@ -17,3 +17,23 @@ Cr 2. buildah bud
 	scp rpm-qa.container-6ead8216858b gary@smash.nx:work/gdbtest/back2back
       [git add rpm-qa.container-6ead8216858b] ...etc
       cleanup: [podman rm -a]
+
+VM 3. a) On VM, booted up,
+         did firstboot setup,
+         mkdir -m700 .ssh
+         Settings -> Sharing -> On
+         Settings -> Sharing -> Remote Login -> On
+      b) On host, added entry to ~/.ssh/config,
+         rsync -a .ssh/authorized_keys fedora31:.ssh
+
+VM 4. Set the root password as per https://gbenson.net/?p=685
+      [grep root /etc/shadow -> root:!::0:99999:7:::], rebooted,
+      su - [echo 'gbenson ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers]
+      sudo dnf -y update
+      [warnings, too many to put them all here]
+      rpm -qa | sort > rpm-qa.vm-$(date --utc +%Y%m%d%H%M)
+      scp rpm-qa.vm-202002071318 gary@192.168.1.3:work/gdbtest/back2back
+      [git add rpm-qa.vm-202002071318] ...etc
+      sudo poweroff
+      [cp -a --reflink=auto fedora31.qcow2{,.$(date --utc +%Y%m%d%H%M)}]
+      => /var/lib/libvirt/images/fedora31.qcow2.202002071545
