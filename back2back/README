@@ -6,3 +6,14 @@ VM 1. Installed Fedora-Workstation-Live-x86_64-31-1.9.iso in VM, no
       => Screenshot_fedora31_2020-02-07_11:39:45.png
       => /var/lib/libvirt/images/fedora31.qcow2.202002071153
       [cp -a --reflink=auto fedora31.qcow2{,.$(date --utc +%Y%m%d%H%M)}]
+      NB this is on blade (RHEL7.7)
+
+Cr 2. buildah bud
+      buildah tag 6ead8216858b docker.io/gbenson/gdbtest-back2back:6ead8216858b
+      [git mv Dockerfile{,.1-6ead8216858b}] ...etc
+      podman push docker.io/gbenson/gdbtest-back2back:6ead8216858b
+      podman run -ti 6ead8216858b
+        rpm -qa | sort > rpm-qa.container-6ead8216858b
+	scp rpm-qa.container-6ead8216858b gary@smash.nx:work/gdbtest/back2back
+      [git add rpm-qa.container-6ead8216858b] ...etc
+      cleanup: [podman rm -a]
