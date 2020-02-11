@@ -58,7 +58,12 @@ VM 6. sudo su - gdbtest                      <== TO INSTALL libipt-devel
       pwd  # == /gdbtest
       rpm -i gdb-8.3.50.20190824-28.fc31.src.rpm
       rpmbuild -bs rpmbuild/SPECS/gdb.spec
-      logout
       sudo dnf builddep -y /gdbtest/rpmbuild/SRPMS/gdb-8.3.50.20190824-28.fc31.src.rpm
       # Installing: libipt-devel, Reinstalling: perl-podlators
       => rpm-qa.vm-202002111558  # just +libipt-devel-2.0-3.fc31.x86_64
+      $ rpmbuild --rebuild gdb-8.3.50.20190824-28.fc31.src.rpm
+      /var/tmp/rpm-tmp.F3BTHy: line 101: make: command not found
+      error: Bad exit status from /var/tmp/rpm-tmp.F3BTHy (%build)
+
+VM 7. sudo dnf install -y make
+      rpmbuild --rebuild gdb-8.3.50.20190824-28.fc31.src.rpm  # it built.
