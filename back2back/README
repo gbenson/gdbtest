@@ -37,3 +37,19 @@ VM 4. Set the root password as per https://gbenson.net/?p=685
       sudo poweroff
       [cp -a --reflink=auto fedora31.qcow2{,.$(date --utc +%Y%m%d%H%M)}]
       => /var/lib/libvirt/images/fedora31.qcow2.202002071545
+
+VM 5. sudo useradd --system --no-log-init --create-home --home-dir=/gdbtest gdbtest
+      sudo su - gdbtest
+      pwd  # == /gdbtest
+      dnf -y download --source gdb  # == gdb-8.3.50.20190824-28.fc31.src.rpm
+      logout
+      sudo dnf -y install rpm-build
+      => rpm-qa.vm-202002111043
+      sudo dnf -y builddep /gdbtest/gdb-8.3.50.20190824-28.fc31.src.rpm
+      => rpm-qa.vm-202002111043
+      sudo su - gdbtest
+      pwd  # == /gdbtest
+      $ rpmbuild --rebuild gdb-8.3.50.20190824-28.fc31.src.rpm
+      error: Failed build dependencies:
+              libipt-devel is needed by gdb-8.3.50.20190824-28.fc31.x86_64
+      => gdb-8.3.50.20190824-28.fc31.spec
