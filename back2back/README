@@ -67,3 +67,12 @@ VM 6. sudo su - gdbtest                      <== TO INSTALL libipt-devel
 
 VM 7. sudo dnf install -y make
       rpmbuild --rebuild gdb-8.3.50.20190824-28.fc31.src.rpm  # it built.
+
+VM 8. rm -Rf rpmbuild
+      rpm -i gdb-8.3.50.20190824-28.fc31.src.rpm
+      rpmbuild -bs --with testsuite rpmbuild/SPECS/gdb.spec
+      sudo dnf builddep -y /gdbtest/rpmbuild/SRPMS/gdb-8.3.50.20190824-28.fc31.src.rpm
+      => rpm-qa.vm-202002111750
+      rm -Rf rpmbuild
+      rpmbuild --rebuild --with testsuite gdb-8.3.50.20190824-28.fc31.src.rpm 2>&1 \
+        | tee build-log-$(date --utc +%Y%m%d%H%M)
