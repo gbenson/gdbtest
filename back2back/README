@@ -53,3 +53,12 @@ VM 5. sudo useradd --system --no-log-init --create-home --home-dir=/gdbtest gdbt
       error: Failed build dependencies:
               libipt-devel is needed by gdb-8.3.50.20190824-28.fc31.x86_64
       => gdb-8.3.50.20190824-28.fc31.spec
+                                                 WORKAROUND FOR FAILURE
+VM 6. sudo su - gdbtest                      <== TO INSTALL libipt-devel
+      pwd  # == /gdbtest
+      rpm -i gdb-8.3.50.20190824-28.fc31.src.rpm
+      rpmbuild -bs rpmbuild/SPECS/gdb.spec
+      logout
+      sudo dnf builddep -y /gdbtest/rpmbuild/SRPMS/gdb-8.3.50.20190824-28.fc31.src.rpm
+      # Installing: libipt-devel, Reinstalling: perl-podlators
+      => rpm-qa.vm-202002111558  # just +libipt-devel-2.0-3.fc31.x86_64
