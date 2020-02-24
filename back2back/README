@@ -110,4 +110,14 @@ BM 3: # ...as gary
       rpm -ivh ~/gdb-8.3.50.20190824-28.fc31.src.rpm
       # ...then edit rpmbuild/SPECS/gdb.spec...
       rpmbuild -bs --with testsuite --with clangtests ~/rpmbuild/SPECS/gdb.spec
+      # Wrote: /home/gary/rpmbuild/SRPMS/gdb-8.3.50.20190824-28.fc31.gbenson1.src.rpm
       rpm -qp --requires ~/rpmbuild/SRPMS/gdb-8.3.50.20190824-28.fc31.gbenson1.src.rpm
+      # clang is there
+      mock -r fedora-31-x86_64 \
+        --rebuild ~/rpmbuild/SRPMS/gdb-8.3.50.20190824-28.fc31.gbenson1.src.rpm \
+        --with=testsuite \
+	--with=clangtests \
+	>mock-build-$(date --utc +%Y%m%d%H%M).log 2>&1 # in screen, as before
+WTF?
+mockbuild.exception.Error: Command failed:
+ # /usr/bin/systemd-nspawn -q -M 288000fe39e74d57a361ccbd5b6e15e2 -D /var/lib/mock/fedora-31-x86_64/root -a --capability=cap_ipc_lock --bind=/tmp/mock-resolv.o2rp3ux_:/etc/resolv.conf --setenv=TERM=vt100 --setenv=SHELL=/bin/bash --setenv=HOME=/builddir --setenv=HOSTNAME=mock --setenv=PATH=/usr/bin:/bin:/usr/sbin:/sbin --setenv=PROMPT_COMMAND=printf "\033]0;<mock-chroot>\007" --setenv=PS1=<mock-chroot> \s-\v\$  --setenv=LANG=en_GB.utf8 -u mockbuild bash --login -c /usr/bin/rpmbuild -bb --target x86_64 --nodeps /builddir/build/SPECS/gdb.spec
