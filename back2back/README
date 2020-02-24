@@ -102,3 +102,12 @@ BM 2: # ...as gary
           check//unix/-m32 \
           check//native-gdbserver/-m32 \
           check//native-extended-gdbserver/-m32
+
+BM 3: # ...as gary
+      rm -rf ~/rpmbuild
+      md5sum gdb-8.3.50.20190824-28.fc31.src.rpm
+      # == 4687105fb0cbe59ae2457e51a4672c6f
+      rpm -ivh ~/gdb-8.3.50.20190824-28.fc31.src.rpm
+      # ...then edit rpmbuild/SPECS/gdb.spec...
+      rpmbuild -bs --with testsuite --with clangtests ~/rpmbuild/SPECS/gdb.spec
+      rpm -qp --requires ~/rpmbuild/SRPMS/gdb-8.3.50.20190824-28.fc31.gbenson1.src.rpm

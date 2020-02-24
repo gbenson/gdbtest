@@ -35,7 +35,7 @@ Version: 8.3.50.%{snapsrc}
 
 # The release always contains a leading reserved number, start it at 1.
 # `upstream' is not a part of `name' to stay fully rpm dependencies compatible for the testing.
-Release: 28%{?dist}
+Release: 28%{?dist}.gbenson1
 
 License: GPLv3+ and GPLv3+ with exceptions and GPLv2+ and GPLv2+ with exceptions and GPL+ and LGPLv2+ and LGPLv3+ and BSD and Public Domain and GFDL
 # Do not provide URL for snapshots as the file lasts there only for 2 days.
@@ -366,6 +366,9 @@ BuildRequires: xz
 %endif
 %if 0%{!?rhel:1} || 0%{?rhel} > 7
 BuildRequires: rust
+%endif
+%if 0%{?_with_clangtests:1}
+BuildRequires: clang
 %endif
 
 %endif # 0%{?_with_testsuite:1}
@@ -847,6 +850,11 @@ gcc -o ./orphanripper %{SOURCE2} -Wall -lutil -ggdb2
   # Run all the scheduled testsuite runs also in the PIE mode.
   # See also: gdb-runtest-pie-override.exp
   ###CHECK="$(echo $CHECK|sed 's#check//unix/[^ ]*#& &/-fPIC/-pie#g')"
+
+  # Compile the testcases with Clang if required.
+%if 0%{?_with_clangtests:1}
+  CHECK="$CHECK CC_FOR_TARGET=%{_bindir}/clang CXX_FOR_TARGET=%{_bindir}/clang++"
+%endif
 
   ./orphanripper make %{?_smp_mflags} -k $CHECK || :
 )
