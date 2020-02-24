@@ -76,3 +76,29 @@ VM 8. rm -Rf rpmbuild
       rm -Rf rpmbuild
       rpmbuild --rebuild --with testsuite gdb-8.3.50.20190824-28.fc31.src.rpm 2>&1 \
         | tee build-log-$(date --utc +%Y%m%d%H%M)
+
+BM 1: sudo useradd --system --no-log-init --create-home --home-dir=/gdbtest gdbtest
+      sudo su - gdbtest
+      pwd  # == /gdbtest
+      dnf -y download --source gdb  # == gdb-8.3.50.20190824-28.fc31.src.rpm
+      md5sum gdb-*.src.rpm  # == 4687105fb0cbe59ae2457e51a4672c6f
+      # wait...
+
+BM 2: # ...as gary
+      md5sum gdb-*.src.rpm  # == 4687105fb0cbe59ae2457e51a4672c6f
+      mock -r fedora-31-x86_64 --rebuild gdb-8.3.50.20190824-28.fc31.src.rpm \
+        --with=testsuite \
+        >mock-build-$(date --utc +%Y%m%d%H%M).log 2>&1 # in screen
+      # N.B. there's almost nothing in that logfile
+      sudo tar cPf mock-build-202002181647.tar /var/lib/mock/fedora-31-x86_64
+      # N.B. it's 6.1 GiB.
+      uudecode /var/lib/mock/fedora-31-x86_64/result/build.log
+      # ...writes gdb-x86_64-redhat-linux-gnu.tar.bz2
+      # Note that, from /var/lib/mock/.../build.log, the checks were invoked as:
+      ./orphanripper make -j4 -k \
+          check//unix/-m64 \
+          check//native-gdbserver/-m64 \
+          check//native-extended-gdbserver/-m64 \
+          check//unix/-m32 \
+          check//native-gdbserver/-m32 \
+          check//native-extended-gdbserver/-m32
