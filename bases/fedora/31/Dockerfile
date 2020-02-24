@@ -3,10 +3,10 @@ LABEL maintainer="Gary Benson <gbenson@redhat.com>"
 
 RUN\
  dnf -y update &&\
- dnf -y install dnf-command({builddep,download}) @buildsys-build &&\
- dnf -y builddep gdb &&\
- dnf clean all &&\
+ dnf -y install dnf-command'('{builddep,download}')' @buildsys-build &&\
  useradd -r --no-log-init -md/gdbtest gdbtest
+# dnf -y builddep gdb &&\
+# dnf clean all &&\
 
 WORKDIR /gdbtest
 #USER gdbtest
