@@ -5,4 +5,4 @@ USER gdbtest
 WORKDIR /gdbtest
 RUN\
  rm -f gdb-*.src.rpm &&\
- git clone git://sourceware.org/git/binutils-gdb.git src
+ git clone --quiet git://sourceware.org/git/binutils-gdb.git src
