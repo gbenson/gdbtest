@@ -3,7 +3,8 @@ LABEL maintainer="Gary Benson <gbenson@redhat.com>"
 
 RUN\
  dnf -y update &&\
- dnf -y install dnf-command'('{builddep,download}')' @buildsys-build clang &&\
+ dnf -y install dnf-command'('{builddep,download}')' @buildsys-build\
+ clang git &&\
  useradd -r --no-log-init -md/gdbtest gdbtest &&\
  cd /gdbtest &&\
  runuser -u gdbtest -- /usr/bin/dnf -y download --source gdb &&\
@@ -11,11 +12,3 @@ RUN\
  dnf -y builddep rpmbuild/SRPMS/gdb-*.src.rpm &&\
  rm -rf rpmbuild &&\
  dnf clean all
-
-WORKDIR /gdbtest
-#USER gdbtest
-#RUN\
-# dnf -y download --source gdb &&\
-# rpm -iv gdb-*-*.src.rpm &&\
-# rm -f gdb-*-*.src.rpm&&\
-# dnf clean all
