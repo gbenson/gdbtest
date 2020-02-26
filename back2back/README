@@ -140,3 +140,15 @@ BM 3: # ...as gary
 
       Oh, hey, read1.so is LD_PRELOADed into expect, so should it *not*
       be CC_FOR_TARGET?  I have no idea :(
+
+Cr 3: cd targets/gcc
+      #screen
+      buildah bud -t docker.io/gbenson/gdbtest-fedora31-upstream-gcc:latest
+      # 2>&1 | tee ~/buildah-gcc-log-$(date --utc +%Y%m%d%H%M)
+      ls -l buildah-gcc-log-202002261233
+      -rw-r--r--. 1 gary gary 2192910 Feb 26 13:22 buildah-gcc-log-202002261233
+      i.e. it took 49 minutes
+      podman push docker.io/gbenson/gdbtest-fedora31-upstream-gcc:latest
+      podman run -ti gbenson/gdbtest-fedora31-upstream-gcc \
+        cat build/gdb/testsuite/gdb.sum \
+	  > back2back/gcc-in-container-db2e50584ecd.sum
