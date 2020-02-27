@@ -168,3 +168,18 @@ BM 4: podman run -ti docker.io/gbenson/gdbtest-fedora31-upstream  # From the FRO
       -> exit
       sudo cat /gdbtest/build/gdb/testsuite/gdb.sum \
         > back2back/baremetal-gcc-20200226-1.sum
+
+BM 5: sudo su - gdbtest
+      mkdir baremetal-gcc-20200226-1
+      mv src build make-check.log baremetal-gcc-20200226-1
+      tar xPf gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz
+      make -C /gdbtest/build $(rpmbuild --eval='%{?_smp_mflags}') -k \
+        CC_FOR_TARGET=/usr/bin/clang CXX_FOR_TARGET=/usr/bin/clang++ \
+        check 2>&1 | tee make-check.log
+      exit
+      ...
+      sudo cat /gdbtest/build/gdb/testsuite/gdb.sum \
+        > back2back/baremetal-clang-20200227-1.sum
+      sudo su - gdbtest
+      mkdir baremetal-clang-20200227-1
+      mv src build make-check.log baremetal-clang-20200227-1
