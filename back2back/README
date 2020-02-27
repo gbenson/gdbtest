@@ -183,3 +183,57 @@ BM 5: sudo su - gdbtest
       sudo su - gdbtest
       mkdir baremetal-clang-20200227-1
       mv src build make-check.log baremetal-clang-20200227-1
+      => it didn't work, it used GCC for most of it :(
+      NB. objdump -sj.comment FILE...
+
+BM 6: sudo su - gdbtest
+      rm -rf build src make-check.log
+      tar xPf gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz
+      make -C /gdbtest/build $(rpmbuild --eval='%{?_smp_mflags}') -k \
+        RUNTESTFLAGS='CC_FOR_TARGET="/usr/bin/clang" CXX_FOR_TARGET="/usr/bin/clang++"' \
+        check 2>&1 | tee make-check.log
+      mkdir baremetal-clang-20200227-2
+      mv src build make-check.log baremetal-clang-20200227-2
+      chmod -w baremetal-*
+      exit
+      ...
+      sudo cat /gdbtest/baremetal-clang-20200227-2/build/gdb/testsuite/gdb.sum \
+        > baremetal-clang-20200227-2.log
+      => it mostly worked: Clang for building to .o, GCC for linking:
+
+bash$ objdump -sj.comment build/gdb/gdb
+
+build/gdb/gdb:     file format elf64-x86-64
+
+Contents of section .comment:
+ 0000 4743433a 2028474e 55292039 2e322e31  GCC: (GNU) 9.2.1
+ 0010 20323031 39303832 37202852 65642048   20190827 (Red H
+ 0020 61742039 2e322e31 2d312900           at 9.2.1-1).
+bash$ objdump -sj.comment build/gdb/testsuite/read1.so
+
+build/gdb/testsuite/read1.so:     file format elf64-x86-64
+
+Contents of section .comment:
+ 0000 4743433a 2028474e 55292039 2e322e31  GCC: (GNU) 9.2.1
+ 0010 20323031 39303832 37202852 65642048   20190827 (Red H
+ 0020 61742039 2e322e31 2d312900           at 9.2.1-1).
+bash$ objdump -sj.comment build/gdb/testsuite/outputs/gdb.base/memattr/memattr0.o
+
+build/gdb/testsuite/outputs/gdb.base/memattr/memattr0.o:     file format elf64-x86-64
+
+Contents of section .comment:
+ 0000 00636c61 6e672076 65727369 6f6e2039  .clang version 9
+ 0010 2e302e30 20284665 646f7261 20392e30  .0.0 (Fedora 9.0
+ 0020 2e302d31 2e666333 312900             .0-1.fc31).
+
+bash$ objdump -sj.comment build/gdb/testsuite/outputs/gdb.base/memattr/memattr
+
+build/gdb/testsuite/outputs/gdb.base/memattr/memattr:     file format elf64-x86-64
+
+Contents of section .comment:
+ 0000 4743433a 2028474e 55292039 2e322e31  GCC: (GNU) 9.2.1
+ 0010 20323031 39303832 37202852 65642048   20190827 (Red H
+ 0020 61742039 2e322e31 2d312900 636c616e  at 9.2.1-1).clan
+ 0030 67207665 7273696f 6e20392e 302e3020  g version 9.0.0
+ 0040 28466564 6f726120 392e302e 302d312e  (Fedora 9.0.0-1.
+ 0050 66633331 2900                        fc31).
