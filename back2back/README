@@ -152,3 +152,19 @@ Cr 3: cd targets/gcc
       podman run -ti gbenson/gdbtest-fedora31-upstream-gcc \
         cat build/gdb/testsuite/gdb.sum \
 	  > back2back/gcc-in-container-db2e50584ecd.sum
+
+BM 4: podman run -ti docker.io/gbenson/gdbtest-fedora31-upstream  # From the FROM in the Dockerfile
+      -> tar cPf /tmp/gdbtest-fedora31-upstream-baf628cfcdfe.tar /gdbtest
+      -> xz /tmp/gdbtest-fedora31-upstream-baf628cfcdfe.tar
+      -> exit
+      podman start relaxed_haslett
+      podman exec relaxed_haslett cat /tmp/gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz > gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz
+      podman stop -a
+      sudo mv gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz /gdbtest
+      sudo su - gdbtest
+      -> tar xPf gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz
+      -> make -C /gdbtest/build $(rpmbuild --eval='%{?_smp_mflags}') -k check 2>&1 | tee make-check.log
+      -> # From the RUN in the Dockerfile
+      -> exit
+      sudo cat /gdbtest/build/gdb/testsuite/gdb.sum \
+        > back2back/baremetal-gcc-20200226-1.sum
