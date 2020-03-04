@@ -237,3 +237,42 @@ Contents of section .comment:
  0030 67207665 7273696f 6e20392e 302e3020  g version 9.0.0
  0040 28466564 6f726120 392e302e 302d312e  (Fedora 9.0.0-1.
  0050 66633331 2900                        fc31).
+
+Compare results
+ - grep '\(PASS\|FAIL\|UN\(TEST\|SUPPORT\)ED\):' baremetal-X.sum > Y.passfail
+ - diff -u baremetal-{gcc-20200226-1,clang-20200227-2}.passfail
+ - NB rpmbuild --eval='%{?_smp_mflags}' says "-j4"
+ - NB RUNTESTFLAGS disables parallel testing?
+ [https://sourceware.org/gdb/wiki/TestingGDB#RUNTESTFLAGS_and_parallel_.28-j.29_testing]
+ - Hmmm...
+
+BM 7: screen -S baremetal
+      sudo su - gdbtest
+
+   a) tar xPf gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz
+      time make -C /gdbtest/build -k check >make-check.log 2>&1
+      # real    28m53.999s
+      # user    19m27.496s
+      # sys     4m19.006s
+      mkdir baremetal-gcc-20200304-1
+      mv src build make-check.log baremetal-gcc-20200304-1
+      chmod 755 baremetal-*
+
+   b) tar xPf gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz
+      time make -C /gdbtest/build -k \
+        RUNTESTFLAGS='CC_FOR_TARGET="/usr/bin/clang" CXX_FOR_TARGET="/usr/bin/clang++"' \
+        check >make-check.log 2>&1
+      # real    47m19.813s
+      # user    22m12.228s
+      # sys     4m42.252s
+      mkdir baremetal-clang-20200304-1
+      mv src build make-check.log baremetal-clang-20200304-1
+      chmod 755 baremetal-*
+
+   c) exit
+      for i in gcc clang; do
+        for j in sum log; do
+          sudo cat /gdbtest/baremetal-$i-20200304-1/build/gdb/testsuite/gdb.$j \
+            > baremetal-$i-20200304-1.$j
+        done
+      done
