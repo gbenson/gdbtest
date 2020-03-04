@@ -276,3 +276,78 @@ BM 7: screen -S baremetal
             > baremetal-$i-20200304-1.$j
         done
       done
+
+   d) TANGENT: Q: should I specify LD_FOR_TARGET="/usr/bin/clang"?
+               A: no, it's wrong, clang doesn't take the same command
+                  line arguments ld does, and this causes one test
+	          (gdb.asm/asm-source.exp) to go PASS*29 => UNTESTED*1.
+		  Also there were two other (spurious?) changes.
+      tar xPf gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz
+      time make -C /gdbtest/build -k \
+        RUNTESTFLAGS='CC_FOR_TARGET="/usr/bin/clang" \
+                      CXX_FOR_TARGET="/usr/bin/clang++"' \
+		      LD_FOR_TARGET="/usr/bin/clang"' \
+        check >make-check.log 2>&1
+      # real    47m19.813s
+      # user    22m12.228s
+      # sys     4m42.252s
+      mkdir baremetal-clang-20200304-2
+      mv src build make-check.log baremetal-clang-20200304-2
+      chmod 755 baremetal-*
+      ...
+      for k in 1 2; do
+        f=baremetal-clang-20200304-$k
+	grep '\(PASS\|FAIL\|UN\(TEST\|SUPPORT\)ED\):' $f.sum > $f.pf
+      done
+      diff -u0 baremetal-clang-20200304-[12].pf
+      @@ -1478,29 +1478 @@
+      -PASS: gdb.asm/asm-source.exp: $whatever x 29
+      +UNTESTED: gdb.asm/asm-source.exp: failed to link
+      @@ -18876 +18848 @@
+      -FAIL: gdb.base/so-impl-ld.exp: step out of solib call
+      +FAIL: gdb.base/so-impl-ld.exp: step out of solib call (the program exited)
+      @@ -50763 +50735 @@
+      -KFAIL: gdb.threads/process-dies-while-handling-bp.exp: non_stop=off: cond_bp_target=0: inferior 1 exited (memory error) (PRMS: gdb/18749)
+      +KFAIL: gdb.threads/process-dies-while-handling-bp.exp: non_stop=off: cond_bp_target=0: inferior 1 exited (prompt) (PRMS: gdb/18749)
+
+   b) TANGENT: Q: it's only gdb.asm/asm-source.exp that's affected?
+               A: sure looks that way:
+
+      tar xPf gdbtest-fedora31-upstream-baf628cfcdfe.tar.xz
+      time make -C /gdbtest/build -k \
+        RUNTESTFLAGS='LD_FOR_TARGET="/bin/false"' \
+        check >make-check.log 2>&1
+      # real    28m10.930s
+      # user    18m56.776s
+      # sys     4m10.840s
+      mkdir baremetal-gcc-false-20200305-1
+      mv src build make-check.log baremetal-gcc-false-20200305-1
+      chmod 755 baremetal-*
+      ...
+      for r in 20200304 false-20200305; do
+        f=baremetal-gcc-$r-1
+        grep '\(PASS\|FAIL\|UN\(TEST\|SUPPORT\)ED\):' $f.sum > $f.pf
+      done
+      diff -u0 baremetal-gcc-2*.pf baremetal-gcc-false-20200305-1.pf
+      @@ -1478,29 +1478 @@
+      -PASS: gdb.asm/asm-source.exp: $whatever x 29
+      +UNTESTED: gdb.asm/asm-source.exp: failed to link
+      ...as before
+      (possibly there were spurious changes too, but I deleted the files)
+
+   c) TANGENT: Q: Are baremetal-clang-{20200227-2,20200304-1} equivalent?
+      	       A: It looks that way:
+
+      diff -u0 baremetal-clang-{20200227-2,20200304-1}.pf
+      @@ -49277 +49277 @@
+      -XFAIL: gdb.threads/attach-many-short-lived-threads.exp: iter 1: attach (EPERM)
+      +PASS: gdb.threads/attach-many-short-lived-threads.exp: iter 1: attach
+      @@ -49354 +49354 @@
+      -XFAIL: gdb.threads/attach-many-short-lived-threads.exp: iter 8: attach (EPERM)
+      +PASS: gdb.threads/attach-many-short-lived-threads.exp: iter 8: attach
+      @@ -49365 +49365 @@
+      -XFAIL: gdb.threads/attach-many-short-lived-threads.exp: iter 9: attach (EPERM)
+      +PASS: gdb.threads/attach-many-short-lived-threads.exp: iter 9: attach
+      @@ -50763 +50763 @@
+      -KFAIL: gdb.threads/process-dies-while-handling-bp.exp: non_stop=off: cond_bp_target=0: inferior 1 exited (prompt) (PRMS: gdb/18749)
+      +KFAIL: gdb.threads/process-dies-while-handling-bp.exp: non_stop=off: cond_bp_target=0: inferior 1 exited (memory error) (PRMS: gdb/18749)
