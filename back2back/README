@@ -351,3 +351,14 @@ BM 7: screen -S baremetal
       @@ -50763 +50763 @@
       -KFAIL: gdb.threads/process-dies-while-handling-bp.exp: non_stop=off: cond_bp_target=0: inferior 1 exited (prompt) (PRMS: gdb/18749)
       +KFAIL: gdb.threads/process-dies-while-handling-bp.exp: non_stop=off: cond_bp_target=0: inferior 1 exited (memory error) (PRMS: gdb/18749)
+
+Compare results (take 2)
+========================
+  Can diff sum files directly now GCC results are in sequence:
+
+    diff -u baremetal-{gcc,clang}-20200304-1.sum | less
+
+  It was nice, but there's so many n*PASS => 1*UNTESTED ones because
+  of this or that testcase failing to compile with Clang.  Could do
+  with something to strip those cases out (fixing testcases to compile
+  with Clang is *not* my task here, not yet anyhow!)
