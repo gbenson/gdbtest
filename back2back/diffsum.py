@@ -1,0 +1,316 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from __future__ import absolute_import
+from __future__ import division
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import os
+import re
+import sys
+
+from itertools import zip_longest
+
+class Sumfile(object):
+    def __init__(self, filename, testclass=None):
+        self.filename = filename
+        if testclass is None:
+            testclass = SumfileTestcase
+        self._testclass = testclass
+        self._testcases = None
+
+    @property
+    def testcases(self):
+        if self._testcases is None:
+            self._read()
+        return self._testcases
+
+    def _read(self):
+        assert self._testcases is None
+        self._testcases = {}
+        self.preamble = []
+        testcase = None
+        for line in open(self.filename).readlines():
+            if self._testclass.is_runline(line):
+                testcase = self._testclass(line)
+                key = testcase.shortname
+                assert key not in self._testcases
+                self._testcases[key] = testcase
+            elif testcase is not None:
+                testcase._consume(line)
+            else:
+                self.preamble.append(line)
+        if testcase is not None:
+            self.summary = testcase._pop_summary()
+
+    @property
+    def keys(self):
+        return self.testcases.keys
+
+    _sentinel = object()
+
+    def get(self, key, default=_sentinel):
+        result = self.testcases.get(key, default)
+        if result is self._sentinel:
+            raise KeyError(key)
+        return result
+
+    def compare(self, other):
+        return SumfileMatcher(self, other)
+
+class SumfileTestcase(object):
+    # Lines with this start and end separate the testcases in the file.
+    # We can use this to process error messages with non-parallel runs.
+    RUNLINE_PREFIX = "Running "
+    RUNLINE_SUFFIX = " ...\n"
+
+    # Lines matching this regular expression are the actual results.
+    RESULTLINE_RE = re.compile("^([A-Z]+): ([^/]+/[^/]+\.exp): ")
+
+    # The final testcase will have consumed the sumfile's summary.
+    # A line with this start and end should separate it from the
+    # testcase's output.
+    SUMMARY_PREFIX = "\t\t=== "
+    SUMMARY_SUFFIX = " Summary ===\n"
+
+    @classmethod
+    def is_runline(cls, line):
+        return (line.startswith(cls.RUNLINE_PREFIX)
+                and line.endswith(cls.RUNLINE_SUFFIX))
+
+    def __init__(self, runline):
+        assert self.is_runline(runline)
+        self.lines = [runline]
+        self._raw_counts = {}  # keys = *PASS, *FAIL, UN*
+        self._counts = None    # keys = PASS, FAIL, SKIP only
+        self.results = {}
+        self._resultlines = {}
+
+    @property
+    def filename(self):
+        return self.lines[0][len(self.RUNLINE_PREFIX)
+                             :-len(self.RUNLINE_SUFFIX)]
+    @property
+    def shortname(self):
+        dirname, basename = os.path.split(self.filename)
+        return os.path.join(os.path.basename(dirname), basename)
+
+    def _dedup(self, message):
+        key, count = message, 0
+        while True:
+            if key not in self.results:
+                return key
+            count += 1
+            key = "%s __diffsum_dedup_%08d" % (message, count)
+
+    def _consume(self, line):
+        assert self._counts is None
+        m = self.RESULTLINE_RE.match(line)
+        if m is not None:
+            status, shortname = m.groups()
+            assert shortname == self.shortname
+            message = self._dedup(line[len(m.group(0)):].strip())
+            assert message not in self.results
+            self._raw_counts[status] = self._raw_counts.get(status, 0) + 1
+            self.results[message] = status
+            self._resultlines[message] = len(self.lines)
+        self.lines.append(line)
+
+    def _pop_summary(self):
+        assert self._counts is None
+        assert self.lines
+        for index in range(-1, -1-len(self.lines), -1):
+            line = self.lines[index]
+            if (line.startswith(self.SUMMARY_PREFIX)
+                  and line.endswith(self.SUMMARY_SUFFIX)):
+                break
+        else:
+            assert False
+        index -= 1 # Pop the leading blank line too.
+        assert -index <= len(self.lines)
+        result = self.lines[index:len(self.lines)]
+        self.lines[index:len(self.lines)] = []
+        return result
+
+    @property
+    def counts(self):
+        if self._counts is None:
+            self._counts = {}
+            for raw_status, count in self._raw_counts.items():
+                if raw_status.startswith("UN"):
+                    status = "SKIP"
+                else:
+                    status = raw_status[-4:]
+                    assert status in ("PASS", "FAIL")
+                self._counts[status] = self._counts.get(status, 0) + count
+        return self._counts
+
+    @property
+    def messages(self):
+        tmp = ((line, msg) for msg, line in self._resultlines.items())
+        return (msg for line, msg in sorted(tmp))
+
+    # Canonical comparisons.
+    def not_equivalent_to(self, other):
+        return other is None or self._raw_counts != other._raw_counts
+
+    # Derived comparisons.
+    def is_equivalent_to(self, other):
+        return not self.not_equivalent_to(other)
+
+    # Queries.
+    @property
+    def has_results(self):
+        return not (not self._raw_counts)
+
+    @property
+    def all_passed(self):
+        return self._all_one_status("PASS")
+
+    @property
+    def all_failed(self):
+        return self._all_one_status("FAIL")
+
+    @property
+    def all_skipped(self):
+        return self._all_one_status("SKIP")
+
+    def _all_one_status(self, status):
+        return list(self.counts.keys()) == [status]
+
+    @property
+    def num_passed(self):
+        return self._count("PASS")
+
+    @property
+    def num_failed(self):
+        return self._count("FAIL")
+
+    @property
+    def num_skipped(self):
+        return self._count("SKIP")
+
+    def _count(self, status):
+        return self.counts.get(status, 0)
+
+class SumfileMatcher(object):
+    def __init__(self, sumfile_a, sumfile_b):
+        self._sfa = sumfile_a
+        self._sfb = sumfile_b
+
+    def __getitem__(self, key):
+        a = self._sfa.get(key, None)
+        b = self._sfb.get(key, None)
+        if a is None and b is None:
+            raise KeyError(key)
+        return SumfileTestcasePair(self, a, b)
+
+    def keys(self):
+        result = set(self._sfa.keys())
+        result.update(self._sfb.keys())
+        return sorted(result)
+
+    def values(self):
+        return (self[key] for key in self.keys())
+
+    def __iter__(self):
+        return self.values()
+
+class SumfileTestcasePair(object):
+    def __init__(self, matcher, a, b):
+        self._matcher = matcher
+        self.a = a
+        self.b = b
+
+    CATEGORIES = (
+        "IDENTICAL",          # Identical status: message lines, in order.
+        "EQUIVALENT",         # The same numbers of each status reported.
+        "SKIPPED_EQUIVALENT", # Neither run had passes or fails.
+        "TEST_VANISHED",      # The test ran in A, but wasn't present in B.
+        "TEST_APPEARED",      # The test ran in B, but wasn't present in A.
+        "TEST_BOMBED",        # The test emitted statuses in A, but not in B.
+        "TEST_SKIPPED",       # The test ran in A, but was skipped in B.
+        "REGRESSED",          # B's result was worse than A's.
+        "PART_SKIPPED",       # Test didn't regress, but was partly skipped.
+        "IMPROVED",           # B's result was better than A's.
+        )
+    for _cat in CATEGORIES:
+        assert not _cat in locals()
+        locals()[_cat] = _cat
+    del _cat
+
+    @property
+    def category(self):
+        if self.a is None:
+            assert self.b is not None
+            return self.TEST_APPEARED
+        if self.b is None:
+            return self.TEST_VANISHED
+        if self.a.is_equivalent_to(self.b):
+            return self._categorize_equivalent()
+        if not self.b.has_results:
+            if self.a.all_skipped:
+                return self.SKIPPED_EQUIVALENT
+            return self.TEST_BOMBED
+        if self.b.all_skipped:
+            if self.a.all_skipped:
+                return self.SKIPPED_EQUIVALENT
+            return self.TEST_SKIPPED
+        return self._categorize_nonequivalent()
+
+    def _categorize_equivalent(self):
+        if self.a.results == self.b.results:
+            sentinel = object()
+            for a, b in zip_longest(self.a.messages,
+                                    self.b.messages,
+                                    fillvalue=sentinel):
+                if a != b:
+                    break
+            else:
+                return self.IDENTICAL
+        return self.EQUIVALENT
+
+    def _categorize_nonequivalent(self):
+        if (self.b.num_passed < self.a.num_passed
+              or self.b.num_failed > self.a.num_failed):
+            return self.REGRESSED
+
+        if self.b.num_skipped > self.a.num_skipped:
+            return self.PART_SKIPPED
+
+        if (self.b.num_passed > self.a.num_passed
+              or self.b.num_failed < self.a.num_failed
+              or self.b.num_skipped < self.a.num_skipped):
+            return self.IMPROVED
+
+        assert self.b.counts == self.a.counts
+        return self.EQUIVALENT
+
+def main():
+    if len(sys.argv) != 3:
+        print("Usage: diffsum FILE1 FILE2",
+              "Compare two DejaGnu summary log (.sum) output files.",
+              "", "Report bugs to: gbenson@redhat.com",
+              file=sys.stderr, sep="\n")
+        sys.exit(2)
+    a, b = map(Sumfile, sys.argv[1:])
+    counts, total = {}, 0
+    for pair in a.compare(b):
+        total += 1
+        category = pair.category
+        counts[category] = counts.get(category, 0) + 1
+    print()
+    counts = [(count, category) for category, count in counts.items()]
+    counts.append((total, "TOTAL"))
+    for count, category in sorted(counts):
+        if category == "TOTAL":
+            print(" "*2 + "=" * 32)
+        print("%20s %4d %5.1f%%" % (category, count, 100*count/total))
+    print()
+
+if __name__ == "__main__":
+    if "sys" not in locals():
+        import sys
+    assert sys.version_info >= (3,)
+    main()
