@@ -218,27 +218,76 @@ class SumfileMatcher(object):
         return self.values()
 
 class SumfileTestcasePair(object):
+    class Category(object):
+        def __init__(self, **kwargs):
+            self.__dict__.update(kwargs)
+
+        def __str__(self):
+            return self.name
+
+    @classmethod
+    def _cls_init(cls):
+        for pri, cat in enumerate((
+            ("IDENTICAL",
+             """Identical status+message lines were emitted,
+             in the same order.  These pairs should not
+             require investigation."""),
+
+            ("SKIPPED_EQUIVALENT",
+             """Neither run reported passes or fails, but the
+             reported status lines were not identical."""),
+
+            ("TEST_APPEARED",
+             """The test ran in the second run, but it was entirely
+             absent in the first.  This should only occur when the
+             .exp file was added between runs."""),
+
+            ("PART_SKIPPED",
+             """Some of the test ran without regressions, but it was
+             partly skipped in the second run."""),
+
+            ("TEST_SKIPPED",
+             """The test ran in the first run, but it was entirely
+             skipped in the second.  This usually represents the
+             test reporting the lack of a required feature, or the
+             test detecting that its testcases failed to compile."""),
+
+            ("TEST_BOMBED",
+             """The test emitted statuses in the first run, but not
+             in the second.  This usually represents the test failing
+             in some unhandled way."""),
+
+            ("TEST_VANISHED",
+             """The test ran in the first run, but it was entirely
+              absent in the second.  This should only occur when the
+             .exp file was removed between runs."""),
+
+            ("EQUIVALENT",
+             """Both runs emitted the same numbers of each status.
+             These pairs could be trivial differences, or they could
+             represent real regressions."""),
+
+            ("REGRESSED",
+             """The second run's result was worse than the first run's
+             result in some way."""),
+
+            ("IMPROVED",
+             """The second run's result was better than the first run's
+             result in some way."""),
+
+                )):
+            name, description = cat
+            description = " ".join(description.split())
+            setattr(cls, name, cls.Category(priority=pri,
+                                            name=name,
+                                            description=description))
+
     def __init__(self, matcher, a, b):
+        if not hasattr(self, "IMPROVED"):
+            self._cls_init()
         self._matcher = matcher
         self.a = a
         self.b = b
-
-    CATEGORIES = (
-        "IDENTICAL",          # Identical status: message lines, in order.
-        "EQUIVALENT",         # The same numbers of each status reported.
-        "SKIPPED_EQUIVALENT", # Neither run had passes or fails.
-        "TEST_VANISHED",      # The test ran in A, but wasn't present in B.
-        "TEST_APPEARED",      # The test ran in B, but wasn't present in A.
-        "TEST_BOMBED",        # The test emitted statuses in A, but not in B.
-        "TEST_SKIPPED",       # The test ran in A, but was skipped in B.
-        "REGRESSED",          # B's result was worse than A's.
-        "PART_SKIPPED",       # Test didn't regress, but was partly skipped.
-        "IMPROVED",           # B's result was better than A's.
-        )
-    for _cat in CATEGORIES:
-        assert not _cat in locals()
-        locals()[_cat] = _cat
-    del _cat
 
     @property
     def category(self):
