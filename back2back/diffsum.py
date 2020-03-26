@@ -6,10 +6,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import operator
 import os
 import re
 import sys
 
+from functools import reduce
 from itertools import zip_longest
 
 class Sumfile(object):
@@ -344,17 +346,25 @@ def main():
               file=sys.stderr, sep="\n")
         sys.exit(2)
     a, b = map(Sumfile, sys.argv[1:])
-    counts, total = {}, 0
+
+    # Group the testresult pairs by category.
+    pairs_by_category = {}
     for pair in a.compare(b):
-        total += 1
-        category = pair.category
-        counts[category] = counts.get(category, 0) + 1
+        cat = pair.category
+        if cat not in pairs_by_category:
+            pairs_by_category[cat] = []
+        pairs_by_category[cat].append(pair)
+
+    # Print a summary.
     print()
-    for pri, category in sorted(((cat.priority, cat)
-                                 for cat in counts.keys()),
-                                reverse=True):
-        count = counts[category]
-        print("%20s %4d %5.1f%%" % (category, count, 100*count/total))
+    total = reduce(operator.add,
+                   (len(pairs)
+                    for pairs in pairs_by_category.values()))
+    for pri, cat in sorted(((cat.priority, cat)
+                            for cat in pairs_by_category.keys()),
+                           reverse=True):
+        count = len(pairs_by_category[cat])
+        print("%20s %4d %5.1f%%" % (cat, count, 100*count/total))
     print(" "*2 + "=" * 32)
     print("%20s %4d %5.1f%%" % ("TOTAL", total, 100))
     print()
