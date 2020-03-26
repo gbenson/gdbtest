@@ -350,12 +350,13 @@ def main():
         category = pair.category
         counts[category] = counts.get(category, 0) + 1
     print()
-    counts = [(count, category) for category, count in counts.items()]
-    counts.append((total, "TOTAL"))
-    for count, category in sorted(counts):
-        if category == "TOTAL":
-            print(" "*2 + "=" * 32)
+    for pri, category in sorted(((cat.priority, cat)
+                                 for cat in counts.keys()),
+                                reverse=True):
+        count = counts[category]
         print("%20s %4d %5.1f%%" % (category, count, 100*count/total))
+    print(" "*2 + "=" * 32)
+    print("%20s %4d %5.1f%%" % ("TOTAL", total, 100))
     print()
 
 if __name__ == "__main__":
