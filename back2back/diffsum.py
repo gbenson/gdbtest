@@ -292,6 +292,12 @@ class SumfileTestcasePair(object):
         self.b = b
 
     @property
+    def shortname(self):
+        result = self.a.shortname
+        assert self.b.shortname == result
+        return result
+
+    @property
     def category(self):
         if self.a is None:
             assert self.b is not None
@@ -368,6 +374,17 @@ def main():
     print(" "*2 + "=" * 32)
     print("%20s %4d %5.1f%%" % ("TOTAL", total, 100))
     print()
+
+    # Print some detail.
+    for pri, cat in sorted(((cat.priority, cat)
+                            for cat in pairs_by_category.keys()),
+                           reverse=True):
+        if cat == SumfileTestcasePair.IDENTICAL:
+            continue
+        print("%s:" % cat)
+        for pair in pairs_by_category[cat]:
+            print(" ", pair.shortname)
+        print()
 
 if __name__ == "__main__":
     if "sys" not in locals():
