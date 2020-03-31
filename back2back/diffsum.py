@@ -131,6 +131,19 @@ class SumfileTestcase(object):
         self.lines[index:len(self.lines)] = []
         return result
 
+    def compute_delta(self, other):
+        self_only = {}
+        other_only = dict((oresult, True) for oresult in other.results)
+        for sresult in self.results:
+            oresult = other_only.pop(sresult, None)
+            if oresult is not None:
+                continue
+            assert sresult not in self_only
+            self_only[sresult] = True
+        if not (self_only or other_only): # XXX?
+            return # IDENTICAL            # XXX?
+        return self_only.keys(), other_only.keys()
+
     def is_identical_to(self, other):
         return not self.not_identical_to(other)
 
@@ -210,6 +223,9 @@ class SumfileTestcaseResult(object):
     @property
     def as_tuple(self):
         return self.status, self.testname, self.message
+
+    def __hash__(self):
+        return hash(self.as_tuple)
 
     def __eq__(self, other):
         return not (self != other)
@@ -331,7 +347,9 @@ class SumfileTestcasePair(object):
             return self.TEST_APPEARED
         if self.b is None:
             return self.TEST_VANISHED
-        if self.a.is_identical_to(self.b):
+        delta = self.a.compute_delta(self.b)
+        if delta is None: # XXX
+            assert self.a.is_identical_to(self.b)
             return self.IDENTICAL
 
         # XXX
