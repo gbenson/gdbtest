@@ -12,7 +12,6 @@ import re
 import sys
 
 from functools import reduce
-from itertools import zip_longest
 
 class Sumfile(object):
     def __init__(self, filename, testclass=None):
@@ -84,10 +83,7 @@ class SumfileTestcase(object):
     def __init__(self, runline):
         assert self.is_runline(runline)
         self.lines = [runline]
-        self._raw_counts = {}  # keys = *PASS, *FAIL, UN*
-        self._counts = None    # keys = PASS, FAIL, SKIP only
-        self.results = {}
-        self._resultlines = {}
+        self.results = []
 
     @property
     def filename(self):
@@ -107,20 +103,20 @@ class SumfileTestcase(object):
             key = "%s __diffsum_dedup_%08d" % (message, count)
 
     def _consume(self, line):
-        assert self._counts is None
         m = self.RESULTLINE_RE.match(line)
         if m is not None:
             status, shortname = m.groups()
             assert shortname == self.shortname
-            message = self._dedup(line[len(m.group(0)):].strip())
-            assert message not in self.results
-            self._raw_counts[status] = self._raw_counts.get(status, 0) + 1
-            self.results[message] = status
-            self._resultlines[message] = len(self.lines)
+            message = line[len(m.group(0)):].strip()
+            result = SumfileTestcaseResult(
+                shortname,
+                status,
+                message,
+                len(self.lines))
+            self.results.append(result)
         self.lines.append(line)
 
     def _pop_summary(self):
-        assert self._counts is None
         assert self.lines
         for index in range(-1, -1-len(self.lines), -1):
             line = self.lines[index]
@@ -135,6 +131,14 @@ class SumfileTestcase(object):
         self.lines[index:len(self.lines)] = []
         return result
 
+    def is_identical_to(self, other):
+        return not self.not_identical_to(other)
+
+    def not_identical_to(self, other):
+        return other is None or self.results != other.results
+
+if False:
+  class XXX:
     @property
     def counts(self):
         if self._counts is None:
@@ -195,6 +199,23 @@ class SumfileTestcase(object):
 
     def _count(self, status):
         return self.counts.get(status, 0)
+
+class SumfileTestcaseResult(object):
+    def __init__(self, testname, status, message, rel_lineno):
+        self.testname = testname
+        self.status = status
+        self.message = message
+        self.rel_lineno = rel_lineno
+
+    @property
+    def as_tuple(self):
+        return self.status, self.testname, self.message
+
+    def __eq__(self, other):
+        return not (self != other)
+
+    def __ne__(self, other):
+        return other is None or self.as_tuple != other.as_tuple
 
 class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
@@ -310,6 +331,13 @@ class SumfileTestcasePair(object):
             return self.TEST_APPEARED
         if self.b is None:
             return self.TEST_VANISHED
+        if self.a.is_identical_to(self.b):
+            return self.IDENTICAL
+
+        # XXX
+        if self.a is not None:
+            return self.REGRESSED
+
         if self.a.is_equivalent_to(self.b):
             return self._categorize_equivalent()
         if not self.b.has_results:
@@ -380,6 +408,7 @@ def main():
     print(" "*2 + "=" * 32)
     print("%20s %4d %5.1f%%" % ("TOTAL", total, 100))
     print()
+    return
 
     # Print some detail.
     for pri, cat in sorted(((cat.priority, cat)
