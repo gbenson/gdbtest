@@ -290,6 +290,7 @@ class SumfileTestcasePair(object):
         self._matcher = matcher
         self.a = a
         self.b = b
+        self._category = None
 
     @property
     def shortname(self):
@@ -299,6 +300,11 @@ class SumfileTestcasePair(object):
 
     @property
     def category(self):
+        if self._category is None:
+            self._category = self._categorize()
+        return self._category
+
+    def _categorize(self):
         if self.a is None:
             assert self.b is not None
             return self.TEST_APPEARED
