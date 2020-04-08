@@ -362,3 +362,190 @@ Compare results (take 2)
   of this or that testcase failing to compile with Clang.  Could do
   with something to strip those cases out (fixing testcases to compile
   with Clang is *not* my task here, not yet anyhow!)
+
+Running specific tests
+======================
+  sudo su - gdbtest
+  tar cf baremetal-gcc-20200304-1{.tar,}
+  tar cf baremetal-clang-20200304-1{.tar,}
+  ln -s baremetal-clang-20200304-1/src
+  ln -s baremetal-clang-20200304-1/build
+  export RUNTESTFLAGS='CC_FOR_TARGET="/usr/bin/clang" CXX_FOR_TARGET="/usr/bin/clang++"'
+  cd build
+  make TESTS="gdb.dwarf2/comp-unit-lang.exp" check
+  less gdb/testsuite/gdb.log
+  grep spawn.*data gdb/testsuite/gdb.log # for the GDB commands
+
+FOR FUTURE RUNS:
+ 1: I don't think we need the /usr/bin in /usr/bin/clang{,++}
+ 2. dnf install libdwarf-tools in the containers for dwarfdump
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+gdb.dwarf2/comp-unit-lang.exp
+-----------------------------
+
+# Test that GDB determines the frame's language based on the comp
+# unit's language, even if the file has an unknown file extension,
+# such as ".txt".
+
+Executables:
+ objdump -W baremetal-gcc-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang > gdb.dwarf2_comp-unit-lang/exe-gcc-objdump-W
+ objdump -W baremetal-clang-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang > gdb.dwarf2_comp-unit-lang/exe-clang-objdump-W
+ diff -u gdb.dwarf2_comp-unit-lang/exe-{gcc,clang}-objdump-W | less
+  1. both have DW_AT_language : 4 (C++)
+  2. a bunch of addresses changed
+  3. Clang one has no .debug_line section
+
+comp-unit-lang0.o:
+ objdump -W baremetal-gcc-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang0.o > gdb.dwarf2_comp-unit-lang/obj0-gcc-objdump-W
+ objdump -W baremetal-clang-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang0.o > gdb.dwarf2_comp-unit-lang/obj0-clang-objdump-W
+ diff -u gdb.dwarf2_comp-unit-lang/obj0-{gcc,clang}-objdump-W | less
+  1. this is the one with the changed addresses
+
+comp-unit-lang1.o:
+ objdump -W baremetal-gcc-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o > gdb.dwarf2_comp-unit-lang/obj1-gcc-objdump-W
+ objdump -W baremetal-clang-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o > gdb.dwarf2_comp-unit-lang/obj1-clang-objdump-W
+ diff -u gdb.dwarf2_comp-unit-lang/obj1-{gcc,clang}-objdump-W | less
+  1. both have DW_AT_language : 4 (C++)
+  2. This is the one where the Clang one has no .debug_line section
+
+Where does comp-unit-lang1.o come from?
+  comp-unit-lang.S
+
+Are they the same?
+  diff -u baremetal-{gcc,clang}-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang.S
+   -> yes
+
+Other tools:
+  dwarfdump doesn't show any differences between gcc and clang
+  readelf --debug-dump=line baremetal-gcc-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o prints stuff, including:
+   - The Directory Table is empty.
+   - The File Name Table is empty.
+   - No Line Number Statements.
+  readelf --debug-dump=line baremetal-clang-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o prints nothing at all
+  readelf --debug-dump=decodedline baremetal-gcc-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o prints a header only
+  readelf --debug-dump=decodedline baremetal-clang-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o prints nothing at all
+
+  grep section baremetal-gcc-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang.S
+          .section .debug_info
+          .section .debug_abbrev
+  so .debug_lines comes from GCC
+
+comp-unit-lang1.o again:
+  objdump -s baremetal-gcc-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o > gdb.dwarf2_comp-unit-lang/obj1-gcc-objdump-s
+  objdump -s baremetal-clang-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o > gdb.dwarf2_comp-unit-lang/obj1-clang-objdump-s
+  diff -u gdb.dwarf2_comp-unit-lang/obj1-{gcc,clang}-objdump-s
+
+--- gdb.dwarf2_comp-unit-lang/obj1-gcc-objdump-s	2020-04-08 15:21:45.445967175 +0100
++++ gdb.dwarf2_comp-unit-lang/obj1-clang-objdump-s	2020-04-08 15:21:52.021814101 +0100
+@@ whatever @@
+
+-baremetal-gcc-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o:     file format elf64-x86-64
++baremetal-clang-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o:     file format elf64-x86-64
+
+ Contents of section .debug_info:
+  0000 2c000000 04000000 00000402 66696c65  ,...........file
+  0010 312e7478 74000400 00000000 00000003  1.txt...........
+  0020 0166756e 63000000 00000000 00000000  .func...........
+ Contents of section .debug_abbrev:
+  0000 02110103 08130d11 01120100 00032e01  ................
+  0010 3f0c0308 11011201 00000000           ?...........
+-Contents of section .debug_line:
+- 0000 19000000 03001300 00000101 fb0e0d00  ................
+- 0010 01010101 00000001 00000100 00        .............
+
+What does .debug_line mean?
+ http://dwarfstd.org/doc/DWARF4.pdf
+
+3.1.1 Normal and Partial Compilation Unit Entries
+ ...
+Compilation unit entries may have the following attributes:
+ ...
+4. A DW_AT_stmt_list attribute whose value is a section offset to
+   the line number information for this compilation unit.  This
+   information is placed in a separate object file section from
+   the debugging information entries themselves. The value of the
+   statement list attribute is the offset in the .debug_line section
+   of the first byte of the line number information for this
+   compilation unit (see Section 6.2).
+
+So, GCC has generated a .debug_line section?
+Do other tests generate their own?
+ Yes:
+$ grep -l Dwarf::assemble baremetal-gcc-20200304-1/src/gdb/testsuite/gdb.dwarf2/*.exp | xargs grep stmt_list
+baremetal-gcc-20200304-1/src/gdb/testsuite/gdb.dwarf2/dw2-bad-elf.exp:	    {stmt_list $L1 DW_FORM_sec_offset}
+baremetal-gcc-20200304-1/src/gdb/testsuite/gdb.dwarf2/dw2-bad-elf.exp:	    {stmt_list $L2 DW_FORM_sec_offset}
+baremetal-gcc-20200304-1/src/gdb/testsuite/gdb.dwarf2/dw2-inline-many-frames.exp:	    {stmt_list ${lines_label} DW_FORM_sec_offset}
+baremetal-gcc-20200304-1/src/gdb/testsuite/gdb.dwarf2/dw2-inline-stepping.exp:	    {stmt_list ${lines_label} DW_FORM_sec_offset}
+baremetal-gcc-20200304-1/src/gdb/testsuite/gdb.dwarf2/dw2-ranges-base.exp:	    {stmt_list $L DW_FORM_sec_offset}
+baremetal-gcc-20200304-1/src/gdb/testsuite/gdb.dwarf2/dw2-ranges-func.exp:		{stmt_list $L DW_FORM_sec_offset}
+
+Try: Add {stmt_list func_start addr} to clang:
+  ln -s baremetal-clang-20200304-1/src
+  ln -s baremetal-clang-20200304-1/build
+  export RUNTESTFLAGS='CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++'
+  cd build
+  make TESTS="gdb.dwarf2/comp-unit-lang.exp" check
+   ...
+   FAIL: gdb.dwarf2/comp-unit-lang.exp: show language
+   ...
+  less gdb/testsuite/gdb.log
+  The current source language is "auto; currently c".
+  diff -u baremetal-{gcc,clang}-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang.S
+   -> it is different now
+  objdump -s baremetal-clang-20200304-1/build/gdb/testsuite/outputs/gdb.dwarf2/comp-unit-lang/comp-unit-lang1.o | diff -u gdb.dwarf2_comp-unit-lang/obj1-clang-objdump-s -
+   -> .debug_info, .debug_abbrev both different, still no .debug_lines
+
+Try {stmt_list func_start func_end} instead?
+ -> ERROR: unhandled form func_end
+
+Try {stmt_list func_start DW_FORM_sec_offset} ?
+ -> The current source language is "auto; currently c". again
+
+Try with the actual section (d'oh!):
+  cat /tmp/comp-unit-lang.exp > /gdbtest/baremetal-clang-20200304-1/src/gdb/testsuite/gdb.dwarf2/comp-unit-lang.exp
+
+  now it has a .debug_line section!
+  but section order is
+  .debug_info
+  .debug_line
+  .debug_abbrev
+
+  and with GCC its:
+  .debug_info
+  .debug_abbrev
+  .debug_line
+
+  also the .debug_line section is *slightly* shorter
+
+Try with an empty 'program {}' in the .exp:
+  same
+
+objdump -s:
+  GCC: Contents of section .debug_line:
+        0000 19000000 03001300 00000101 fb0e0d00  ................
+        0010 01010101 00000001 00000100 00        .............
+  CLG: Contents of section .debug_line:
+        0000 16000000 03000f00 00000101 01010a00  ................
+        0010 01010101 00000001 0000               ..........
+
+objdump -Wl for GCC:
+  Offset:                      0x0
+  Length:                      25	19 vs 16	22
+  DWARF Version:               3
+  Prologue Length:             19       13 vs 0f	15
+  Minimum Instruction Length:  1
+  Initial value of 'is_stmt':  1
+  Line Base:                   -5	fb vs 01	1
+  Line Range:                  14	oe vs 01	1
+  Opcode Base:                 13	od vs 0a	10
+
+What does the missing 000001 represent?
+
+GCC has opcodes 1..12
+Clang has opcodes 1..9
+
+  Opcode 10 has 0 args 00
+  Opcode 11 has 0 args 00
+  Opcode 12 has 1 arg  01 ??
