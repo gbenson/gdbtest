@@ -13,6 +13,25 @@ import sys
 
 from functools import reduce
 
+# https://www.gnu.org/software/dejagnu/manual/Summary-log-file.html
+# "===2.3.1 Summary log file==="
+# "DejaGnu always produces a summary (.sum) output file.
+# This summary lists the names of all test files run.
+# For each test file, one line of output from each [pass,fail]..."
+# "For example, after running runtest --tool binutils a summary log
+# file will be written to binutils.sum."
+
+# https://www.gnu.org/software/dejagnu/manual/Adding-a-new-testsuite.html
+# "The testsuite for a new tool should always be located in that tool's
+# source directory."
+# "Under this directory, the test cases go in a subdirectory whose name
+# begins with the tool name. For example, for a tool named gdb, each
+# subdirectory containing testsuites must start with ‘gdb.’."
+
+# Summary log file
+# Testsuite gdb.base
+# Testfile, testcase: gdb.base/test.exp
+
 class Sumfile(object):
     def __init__(self, filename, testclass=None):
         self.filename = filename
@@ -84,23 +103,18 @@ class SumfileTestcase(object):
         assert self.is_runline(runline)
         self.lines = [runline]
         self.results = []
+        self.results_by_msg = {}
 
     @property
     def filename(self):
+        """The full filename of the test file."""
         return self.lines[0][len(self.RUNLINE_PREFIX)
                              :-len(self.RUNLINE_SUFFIX)]
     @property
     def shortname(self):
+        """The test file's filename, relative to the tests directory."""
         dirname, basename = os.path.split(self.filename)
         return os.path.join(os.path.basename(dirname), basename)
-
-    def _dedup(self, message):
-        key, count = message, 0
-        while True:
-            if key not in self.results:
-                return key
-            count += 1
-            key = "%s __diffsum_dedup_%08d" % (message, count)
 
     def _consume(self, line):
         m = self.RESULTLINE_RE.match(line)
@@ -114,6 +128,9 @@ class SumfileTestcase(object):
                 message,
                 len(self.lines))
             self.results.append(result)
+            if message not in self.results_by_msg:
+                self.results_by_msg[message] = []
+            self.results_by_msg[message].append(result)
         self.lines.append(line)
 
     def _pop_summary(self):
@@ -135,8 +152,8 @@ class SumfileTestcase(object):
         self_only = {}
         other_only = dict((oresult, True) for oresult in other.results)
         for sresult in self.results:
-            oresult = other_only.pop(sresult, None)
-            if oresult is not None:
+            oresult = other_only.pop(sresult, False)
+            if oresult:
                 continue
             assert sresult not in self_only
             self_only[sresult] = True
