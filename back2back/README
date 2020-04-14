@@ -382,6 +382,14 @@ FOR FUTURE RUNS:
 
 =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+gdb.compile/compile*.exp
+------------------------
+ - C++ injection tests
+ - keiths: these are unequivocally unrunnable on clang
+ - they ought to be runnable IMO, but plainly not now
+
+=> ignore these failures for now
+
 gdb.dwarf2/comp-unit-lang.exp
 -----------------------------
 
