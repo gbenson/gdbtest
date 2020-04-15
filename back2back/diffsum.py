@@ -350,6 +350,47 @@ class SumfileTestcasePair(object):
         assert self.b.counts == self.a.counts
         return self.EQUIVALENT
 
+class Reporter(object):
+    def __init__(self, pairs_by_category):
+        self.pairs_by_category = pairs_by_category
+
+    def __str__(self):
+        return "\n".join(self.report_lines)
+
+    @property
+    def categories(self):
+        for pri, cat in sorted(((cat.priority, cat)
+                                for cat in self.pairs_by_category.keys()),
+                               reverse=True):
+            yield cat
+
+class CountsReport(Reporter):
+    @property
+    def report_lines(self):
+        total = reduce(operator.add,
+                       (len(pairs)
+                        for pairs in self.pairs_by_category.values()))
+        for cat in self.categories:
+            count = len(self.pairs_by_category[cat])
+            yield "%20s %4d %5.1f%%" % (cat, count, 100*count/total)
+        yield "  " + "=" * 32
+        yield "%20s %4d %5.1f%%" % ("TOTAL", total, 100)
+
+class FilesByCategoryReport(Reporter):
+    @property
+    def report_lines(self):
+        is_first_line = True
+        for cat in self.categories:
+            if cat == SumfileTestcasePair.IDENTICAL:
+                continue
+            if is_first_line:
+                is_first_line = False
+            else:
+                yield ""
+            yield "%s:" % cat
+            for pair in self.pairs_by_category[cat]:
+                yield "  " + pair.shortname
+
 def main():
     if len(sys.argv) != 3:
         print("Usage: diffsum FILE1 FILE2",
@@ -367,30 +408,12 @@ def main():
             pairs_by_category[cat] = []
         pairs_by_category[cat].append(pair)
 
-    # Print a summary.
+    # Print some reports.
     print()
-    total = reduce(operator.add,
-                   (len(pairs)
-                    for pairs in pairs_by_category.values()))
-    for pri, cat in sorted(((cat.priority, cat)
-                            for cat in pairs_by_category.keys()),
-                           reverse=True):
-        count = len(pairs_by_category[cat])
-        print("%20s %4d %5.1f%%" % (cat, count, 100*count/total))
-    print(" "*2 + "=" * 32)
-    print("%20s %4d %5.1f%%" % ("TOTAL", total, 100))
+    print(CountsReport(pairs_by_category))
     print()
-
-    # Print some detail.
-    for pri, cat in sorted(((cat.priority, cat)
-                            for cat in pairs_by_category.keys()),
-                           reverse=True):
-        if cat == SumfileTestcasePair.IDENTICAL:
-            continue
-        print("%s:" % cat)
-        for pair in pairs_by_category[cat]:
-            print(" ", pair.shortname)
-        print()
+    print(FilesByCategoryReport(pairs_by_category))
+    print()
 
 if __name__ == "__main__":
     if "sys" not in locals():
