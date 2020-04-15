@@ -197,6 +197,25 @@ class SumfileTestcase(object):
     def _count(self, status):
         return self.counts.get(status, 0)
 
+    # Compiler failure message extraction.
+    BUILDERROR_STARTLINE_PREFIX = "gdb compile failed,"
+
+    @property
+    def build_errors(self):
+        hunting = True
+        for line in self.lines:
+            if hunting:
+                start = line.find(self.BUILDERROR_STARTLINE_PREFIX)
+                if start < 0:
+                    continue
+                hunting = False
+                line = line[start:]
+            elif self.RESULTLINE_RE.match(line) is not None:
+                break
+            if line.startswith(self.BUILDERROR_STARTLINE_PREFIX):
+                line = line[len(self.BUILDERROR_STARTLINE_PREFIX):].lstrip()
+            yield line
+
 class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
         self._sfa = sumfile_a
@@ -392,6 +411,23 @@ class FilesByCategoryReport(Reporter):
             for pair in self.pairs_by_category[cat]:
                 yield "  " + pair.shortname
 
+class BuildErrorsReport(Reporter):
+    @property
+    def report_lines(self):
+        for cat in self.categories:
+            if cat == SumfileTestcasePair.IDENTICAL:
+                continue
+            for pair in self.pairs_by_category[cat]:
+                is_first_line = True
+                for line in pair.b.build_errors:
+                    if is_first_line:
+                        yield "\x1B[33m%s: %s: %s\x1B[0m" % (
+                            pair.shortname,
+                            cat,
+                            pair.b.BUILDERROR_STARTLINE_PREFIX)
+                        is_first_line = False
+                    yield line.rstrip()
+
 def main():
     parser = argparse.ArgumentParser(
         usage="diffsum [OPTION]... FILE1 FILE2",
@@ -400,6 +436,9 @@ def main():
     parser.add_argument(
         "filenames", metavar="FILE1, FILE2", nargs=2,
         help="the two .sum files to compare")
+    parser.add_argument(
+        "--report-errors", action="store_true",
+        help="report build errors rather than the standard report")
     args = parser.parse_args()
     a, b = map(Sumfile, args.filenames)
 
@@ -412,6 +451,9 @@ def main():
         pairs_by_category[cat].append(pair)
 
     # Print some reports.
+    if args.report_errors:
+        print(BuildErrorsReport(pairs_by_category))
+        return
     print()
     print(CountsReport(pairs_by_category))
     print()
