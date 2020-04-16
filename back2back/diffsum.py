@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import argparse
 import operator
 import os
 import re
@@ -392,13 +393,15 @@ class FilesByCategoryReport(Reporter):
                 yield "  " + pair.shortname
 
 def main():
-    if len(sys.argv) != 3:
-        print("Usage: diffsum FILE1 FILE2",
-              "Compare two DejaGnu summary log (.sum) output files.",
-              "", "Report bugs to: gbenson@redhat.com",
-              file=sys.stderr, sep="\n")
-        sys.exit(2)
-    a, b = map(Sumfile, sys.argv[1:])
+    parser = argparse.ArgumentParser(
+        usage="diffsum [OPTION]... FILE1 FILE2",
+        description="Compare two DejaGnu summary log (.sum) output files.",
+        epilog="report bugs to: gbenson@redhat.com")
+    parser.add_argument(
+        "filenames", metavar="FILE1, FILE2", nargs=2,
+        help="the two .sum files to compare")
+    args = parser.parse_args()
+    a, b = map(Sumfile, args.filenames)
 
     # Group the testresult pairs by category.
     pairs_by_category = {}
