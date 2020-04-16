@@ -216,6 +216,55 @@ class SumfileTestcase(object):
                 line = line[len(self.BUILDERROR_STARTLINE_PREFIX):].lstrip()
             yield line
 
+    @property
+    def terse_build_errors(self):
+        lines = list(self.build_errors)
+        if not lines:
+            return
+        success = False
+
+        for line in lines:
+            if self.is_terse_build_error(line):
+                yield line
+                success = True
+        if success:
+            return
+
+        print("\x1B[1;31m%s: error: can't tersify errors:\x1B[0m"
+              % self.shortname)
+        for lineno, line in enumerate(lines):
+            print("%d:" % (lineno + 1), line.rstrip())
+        raise SystemExit
+
+    WARNING_ERROR_RE = re.compile(r":\s*(?:warning|(?:fatal\s+)?error):\s*")
+    INFILE_LOCATION_RE = re.compile(r":\d+(?::\d+)?$")
+    _compiler_prefixes = {"<unknown>:0": True}
+
+    @classmethod
+    def is_infile_location(cls, text):
+        return cls.INFILE_LOCATION_RE.search(text) is not None
+
+    @classmethod
+    def is_terse_build_error(cls, line):
+        parts = cls.WARNING_ERROR_RE.split(line)
+        if len(parts) == 1:
+            return False
+        prefix, message = parts
+        if prefix in cls._compiler_prefixes:
+            # We've seen this prefix before, below.
+            return True
+        if message.find(" [-W") >= 0:
+            # This message is twice verified. If the prefix isn't
+            # a location in a file, then assume it's the name of
+            # a tool and add it to our list.
+            if not cls.is_infile_location(prefix):
+                cls._compiler_prefixes[prefix] = True
+            return True
+        if cls.is_infile_location(prefix):
+            # It's a location in a file, it's *probably* ok.
+            return True
+        return False
+
 class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
         self._sfa = sumfile_a
@@ -428,6 +477,33 @@ class BuildErrorsReport(Reporter):
                         is_first_line = False
                     yield line.rstrip()
 
+class GroupedBuildErrorsReport(Reporter):
+    @property
+    def report_lines(self):
+        filenames_by_msg = {}
+        for cat in self.categories:
+            if cat == SumfileTestcasePair.IDENTICAL:
+                continue
+            for pair in self.pairs_by_category[cat]:
+                for line in pair.b.terse_build_errors:
+                    prefix, msg = pair.b.WARNING_ERROR_RE.split(line)
+                    if prefix in pair.b._compiler_prefixes:
+                        continue
+                    msg = msg.rstrip()
+                    if msg not in filenames_by_msg:
+                        filenames_by_msg[msg] = {}
+                    filenames_by_msg[msg][prefix] = True
+
+        is_first_line = True
+        for msg, filenames in sorted(filenames_by_msg.items()):
+            if is_first_line:
+                is_first_line = False
+            else:
+                yield ""
+            yield msg
+            for filename in sorted(filenames):
+                yield "  " + filename
+
 def main():
     parser = argparse.ArgumentParser(
         usage="diffsum [OPTION]... FILE1 FILE2",
@@ -436,6 +512,9 @@ def main():
     parser.add_argument(
         "filenames", metavar="FILE1, FILE2", nargs=2,
         help="the two .sum files to compare")
+    parser.add_argument(
+        "--verbose", "-v", action="count", default=0,
+        help="be more verbose")
     parser.add_argument(
         "--report-errors", action="store_true",
         help="report build errors rather than the standard report")
@@ -452,7 +531,10 @@ def main():
 
     # Print some reports.
     if args.report_errors:
-        print(BuildErrorsReport(pairs_by_category))
+        if args.verbose > 0:
+            print(BuildErrorsReport(pairs_by_category))
+        else:
+            print(GroupedBuildErrorsReport(pairs_by_category))
         return
     print()
     print(CountsReport(pairs_by_category))
