@@ -201,7 +201,8 @@ class SumfileTestcase(object):
     BUILDERROR_STARTLINE_PREFIX = "gdb compile failed,"
 
     @property
-    def build_errors(self):
+    def raw_build_errors(self):
+        """This test's build errors, exactly as found."""
         hunting = True
         for line in self.lines:
             if hunting:
@@ -216,8 +217,24 @@ class SumfileTestcase(object):
                 line = line[len(self.BUILDERROR_STARTLINE_PREFIX):].lstrip()
             yield line
 
+    NORMALIZE_FILENAME_RE = re.compile(
+        r"%(sep)s[^%(sep)s]+%(sep)s%(pardir)s%(sep)s"
+        % {"sep": os.sep,
+           "pardir": os.pardir.replace(".", r"\.")})
+
+    @property
+    def build_errors(self):
+        """This test's build errors, with filenames normalized."""
+        for line in self.raw_build_errors:
+            while True:
+                line, numsubs = self.NORMALIZE_FILENAME_RE.subn(os.sep, line)
+                if numsubs < 1:
+                    break
+            yield line
+
     @property
     def terse_build_errors(self):
+        """Important lines (ideally one) from this test's build errors."""
         lines = list(self.build_errors)
         if not lines:
             return
@@ -468,7 +485,7 @@ class BuildErrorsReport(Reporter):
                 continue
             for pair in self.pairs_by_category[cat]:
                 is_first_line = True
-                for line in pair.b.build_errors:
+                for line in pair.b.raw_build_errors:
                     if is_first_line:
                         yield "\x1B[33m%s: %s: %s\x1B[0m" % (
                             pair.shortname,
