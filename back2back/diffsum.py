@@ -485,7 +485,7 @@ class BuildErrorsReport(Reporter):
                 continue
             for pair in self.pairs_by_category[cat]:
                 is_first_line = True
-                for line in pair.b.raw_build_errors:
+                for line in pair.b.build_errors:
                     if is_first_line:
                         yield "\x1B[33m%s: %s: %s\x1B[0m" % (
                             pair.shortname,
