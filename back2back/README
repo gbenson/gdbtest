@@ -557,3 +557,49 @@ Clang has opcodes 1..9
   Opcode 10 has 0 args 00
   Opcode 11 has 0 args 00
   Opcode 12 has 1 arg  01 ??
+
+BM 8: ssh smash2
+      sudo su - gdbtest
+      mkdir -m700 .ssh
+      rsync -av gary@localhost:.ssh/authorized_keys .ssh
+      logout
+
+      ssh gdbtest@smash2
+      rsync -av gary@localhost:.gitconfig ~
+      rsync -av gary@localhost:.emacs ~
+      rsync -av gary@localhost:.el ~
+
+      rm -Rf baremetal-gcc-20200304-1
+      rm -Rf baremetal-clang-20200304-1
+      tar xf baremetal-clang-20200304-1.tar --strip-components=1
+      rm -f make-check.log
+
+      cd src
+      git st
+      # ...
+      # nothing to commit, working tree clean
+      git show --no-abbrev-commit HEAD
+      # commit 09624f1fece637e17c0c31f6b7589466402ea407
+      # Author: Luis Machado <luis.machado@linaro.org>
+      # Date:   Tue Feb 25 11:56:58 2020 -0300
+      # ...
+
+      cd ../build
+      export RUNTESTFLAGS='CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++'
+      GCC:
+        RUNTESTFLAGS= make check TESTS="gdb.base/jit.exp gdb.base/jit-so.exp"
+        # of expected passes		65
+      Clang:
+        make check TESTS="gdb.base/jit.exp gdb.base/jit-so.exp"
+	# of untested testcases		2
+
+      cd ../src
+      # ...and fix it...
+      GCC:
+        RUNTESTFLAGS= make -C /gdbtest/build check TESTS="gdb.base/jit.exp gdb.base/jit-so.exp"
+        # of expected passes		65
+      Clang:
+        make -C /gdbtest/build check TESTS="gdb.base/jit.exp gdb.base/jit-so.exp"
+        # of expected passes		65
+
+      git remote set-url origin git@gitlab.com:gbenson/binutils-gdb.git
