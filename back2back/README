@@ -603,3 +603,17 @@ BM 8: ssh smash2
         # of expected passes		65
 
       git remote set-url origin git@gitlab.com:gbenson/binutils-gdb.git
+
+BM 9: ssh gdbtest@smash2
+      export RUNTESTFLAGS='CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++'
+      cd src
+
+      RUNTESTFLAGS= make -C /gdbtest/build check TESTS="gdb.trace/tspeed.exp"
+      # of unsupported tests		1
+      less ../build/gdb/testsuite/gdb.log
+      # (gdb) tstatus
+      # Trace can not be run on this target.
+      # (gdb) UNSUPPORTED: gdb.trace/tspeed.exp: target does not support trace
+
+      make -C /gdbtest/build check TESTS="gdb.trace/tspeed.exp"
+      # of untested testcases		1
