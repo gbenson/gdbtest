@@ -497,6 +497,7 @@ class BuildErrorsReport(Reporter):
 class GroupedBuildErrorsReport(Reporter):
     @property
     def report_lines(self):
+        testcases_by_msg = {}
         filenames_by_msg = {}
         for cat in self.categories:
             if cat == SumfileTestcasePair.IDENTICAL:
@@ -507,9 +508,11 @@ class GroupedBuildErrorsReport(Reporter):
                     if prefix in pair.b._compiler_prefixes:
                         continue
                     msg = msg.rstrip()
-                    if msg not in filenames_by_msg:
-                        filenames_by_msg[msg] = {}
-                    filenames_by_msg[msg][prefix] = True
+                    for tmp, value in ((testcases_by_msg, pair.shortname),
+                                        (filenames_by_msg, prefix)):
+                        if msg not in tmp:
+                            tmp[msg] = {}
+                        tmp[msg][value] = True
 
         is_first_line = True
         for msg, filenames in sorted(filenames_by_msg.items()):
@@ -520,6 +523,10 @@ class GroupedBuildErrorsReport(Reporter):
             yield msg
             for filename in sorted(filenames):
                 yield "  " + filename
+            for index, testcase in enumerate(sorted(testcases_by_msg[msg])):
+                yield ("\x1B[33m%8s %s\x1B[0m"
+                       % (index == 0 and "affects:" or " ",
+                          testcase))
 
 def main():
     parser = argparse.ArgumentParser(
