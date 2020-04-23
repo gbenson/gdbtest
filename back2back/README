@@ -617,3 +617,53 @@ BM 9: ssh gdbtest@smash2
 
       make -C /gdbtest/build check TESTS="gdb.trace/tspeed.exp"
       # of untested testcases		1
+
+Cr 4: ssh smash
+   # Ensure host system has the latest packages:
+      sudo dnf -y update
+      sudo reboot
+
+      ssh smash
+      cd ~/work/gdbtest
+      podman login docker.io
+
+   # Ensure build container has the latest packages:
+      buildah bud \
+        -t docker.io/gbenson/gdbtest-fedora31-base:latest \
+        bases/fedora/31
+      podman push docker.io/gbenson/gdbtest-fedora31-base:latest
+
+   # Ensure we have sources for a recent gdb/master:
+      buildah bud \
+        -t docker.io/gbenson/gdbtest-fedora31-upstream-base:latest \
+	builds/upstream/base
+      podman push docker.io/gbenson/gdbtest-fedora31-upstream-base:latest
+
+   # Ensure we have a recent gdb/master build:
+      buildah bud \
+        -t docker.io/gbenson/gdbtest-fedora31-upstream:latest \
+	builds/upstream
+      podman push docker.io/gbenson/gdbtest-fedora31-upstream:latest
+
+   # Make a baremetal built source tarball:
+   # window A):
+      podman run -ti docker.io/gbenson/gdbtest-fedora31-upstream
+        -> tar cPf /tmp/gdbtest-fedora31-upstream-22fed04ff20e.tar /gdbtest
+        -> xz /tmp/gdbtest-fedora31-upstream-22fed04ff20e.tar
+
+   # window B):
+      podman ps  # NAMES=angry_williamson
+      podman exec angry_williamson \
+          cat /tmp/gdbtest-fedora31-upstream-22fed04ff20e.tar.xz \
+	  > gdbtest-fedora31-upstream-22fed04ff20e.tar.xz
+      sudo chown 0.0 gdbtest-fedora31-upstream-22fed04ff20e.tar.xz
+      sudo mv gdbtest-fedora31-upstream-22fed04ff20e.tar.xz /gdbtest
+      exit
+
+   # window A again):
+        -> exit
+      podman rm angry_williamson
+
+   # Run tests with GCC:
+      tar xPf gdbtest-fedora31-upstream-22fed04ff20e.tar.xz
+      time make -C /gdbtest/build -k check >make-check.log 2>&1
