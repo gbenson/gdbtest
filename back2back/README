@@ -664,6 +664,27 @@ Cr 4: ssh smash
         -> exit
       podman rm angry_williamson
 
-   # Run tests with GCC:
-      tar xPf gdbtest-fedora31-upstream-22fed04ff20e.tar.xz
+   # Run the tests with GCC:
+      tar xPf 2020-04-23/gdbtest-fedora31-upstream-22fed04ff20e.tar.xz
       time make -C /gdbtest/build -k check >make-check.log 2>&1
+      # real	27m16.895s
+      # user	19m3.232s
+      # sys	3m46.656s
+      mkdir baremetal-gcc-20200423-1
+      mv src build make-check.log baremetal-gcc-20200423-1
+      rpm -qa | sort > baremetal-gcc-20200423-1/rpm-qa.sort
+      tar cf baremetal-gcc-20200423-1{.tar,}
+      xz baremetal-gcc-20200423-1.tar
+
+   # Run the tests with Clang:
+      time make -C /gdbtest/build -k \
+        RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++" \
+        check >make-check.log 2>&1
+      # real	43m53.951s
+      # user	19m17.353s
+      # sys	3m53.488s
+      mkdir baremetal-clang-20200423-1
+      mv src build make-check.log baremetal-clang-20200423-1
+      rpm -qa | sort > baremetal-clang-20200423-1/rpm-qa.sort
+      tar cf baremetal-clang-20200423-1{.tar,}
+      xz baremetal-clang-20200423-1.tar
