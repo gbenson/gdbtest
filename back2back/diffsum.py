@@ -380,8 +380,10 @@ class SumfileTestcasePair(object):
 
     @property
     def shortname(self):
+        if self.a is None:
+            return self.b.shortname
         result = self.a.shortname
-        assert self.b.shortname == result
+        assert self.b is None or self.b.shortname == result
         return result
 
     @property
