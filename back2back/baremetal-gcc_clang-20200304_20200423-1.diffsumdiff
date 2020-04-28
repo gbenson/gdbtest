@@ -1,0 +1,186 @@
+--- baremetal-gcc_clang-20200304-1.diffsum	2020-04-28 11:16:19.750315438 +0100
++++ baremetal-gcc_clang-20200423-1.diffsum	2020-04-28 11:16:31.886167444 +0100
+@@ -1,13 +1,13 @@
+ 
+-            IMPROVED   13   0.7%
+-           REGRESSED  101   5.8%
+-          EQUIVALENT    7   0.4%
+-         TEST_BOMBED   15   0.9%
+-        TEST_SKIPPED  122   7.0%
+-  SKIPPED_EQUIVALENT   23   1.3%
+-           IDENTICAL 1455  83.8%
++            IMPROVED   14   0.8%
++           REGRESSED  122   6.9%
++          EQUIVALENT    8   0.5%
++         TEST_BOMBED   16   0.9%
++        TEST_SKIPPED  117   6.6%
++  SKIPPED_EQUIVALENT   22   1.2%
++           IDENTICAL 1465  83.0%
+   ================================
+-               TOTAL 1736 100.0%
++               TOTAL 1764 100.0%
+ 
+ IMPROVED:
+   gdb.base/async.exp
+@@ -19,6 +19,7 @@
+   gdb.compile/compile-ifunc.exp
+   gdb.cp/ctti.exp
+   gdb.cp/temargs.exp
++  gdb.opt/inline-cmds.exp
+   gdb.reverse/consecutive-precsave.exp
+   gdb.reverse/consecutive-reverse.exp
+   gdb.reverse/solib-reverse.exp
+@@ -43,6 +44,7 @@
+   gdb.base/max-depth.exp
+   gdb.base/nodebug.exp
+   gdb.base/print-file-var.exp
++  gdb.base/psym-external-decl.exp
+   gdb.base/ptype-offsets.exp
+   gdb.base/setvar.exp
+   gdb.base/share-env-with-gdbserver.exp
+@@ -56,6 +58,7 @@
+   gdb.base/symtab-search-order.exp
+   gdb.base/vla-optimized-out.exp
+   gdb.base/vla-ptr.exp
++  gdb.base/watchpoint.exp
+   gdb.base/whatis-ptype-typedefs.exp
+   gdb.btrace/delta.exp
+   gdb.btrace/exception.exp
+@@ -97,20 +100,38 @@
+   gdb.dwarf2/dw2-ref-missing-frame.exp
+   gdb.dwarf2/dw2-skip-prologue.exp
+   gdb.dwarf2/dw2-unresolved.exp
++  gdb.fortran/common-block.exp
++  gdb.fortran/derived-type.exp
++  gdb.fortran/info-modules.exp
++  gdb.fortran/module.exp
++  gdb.fortran/multi-dim.exp
++  gdb.fortran/nested-funcs-2.exp
++  gdb.fortran/print_type.exp
++  gdb.fortran/ptr-indentation.exp
++  gdb.fortran/vla-datatypes.exp
++  gdb.fortran/vla-ptype-sub.exp
++  gdb.fortran/vla-ptype.exp
++  gdb.fortran/vla-type.exp
++  gdb.fortran/vla-value.exp
++  gdb.fortran/whatis_type.exp
+   gdb.guile/scm-pretty-print.exp
+   gdb.guile/scm-symbol.exp
+   gdb.guile/scm-symtab.exp
+   gdb.guile/scm-type.exp
+   gdb.guile/scm-value.exp
++  gdb.linespec/cp-completion-aliases.exp
+   gdb.linespec/cpcompletion.exp
+   gdb.linespec/ls-errs.exp
+   gdb.linespec/macro-relative.exp
+   gdb.mi/dw2-ref-missing-frame.exp
+   gdb.mi/mi-catch-cpp-exceptions.exp
+   gdb.mi/mi-file.exp
++  gdb.mi/mi-fortran-modules.exp
+   gdb.mi/mi-fullname-deleted.exp
+   gdb.mi/mi-sym-info.exp
++  gdb.mi/mi-var-child-f.exp
+   gdb.mi/mi-var-cp.exp
++  gdb.mi/mi-vla-fortran.exp
+   gdb.mi/mi-watch.exp
+   gdb.mi/user-selected-context-sync.exp
+   gdb.multi/multi-arch-exec.exp
+@@ -125,6 +146,7 @@
+   gdb.reverse/step-reverse.exp
+   gdb.reverse/watch-precsave.exp
+   gdb.stabs/gdb11479.exp
++  gdb.threads/attach-many-short-lived-threads.exp
+   gdb.threads/tls-so_extern.exp
+ 
+ EQUIVALENT:
+@@ -133,6 +155,7 @@
+   gdb.base/offsets.exp
+   gdb.base/sss-bp-on-user-bp.exp
+   gdb.fortran/derived-type-striding.exp
++  gdb.fortran/info-types.exp
+   gdb.opt/inline-break.exp
+   gdb.threads/process-dies-while-handling-bp.exp
+ 
+@@ -140,15 +163,16 @@
+   gdb.base/dfp-test.exp
+   gdb.base/gdb11530.exp
+   gdb.base/morestack.exp
+-  gdb.base/nested-subp1.exp
+-  gdb.base/nested-subp2.exp
+-  gdb.base/nested-subp3.exp
+   gdb.base/prelink.exp
+   gdb.base/solib-weak.exp
++  gdb.cp/step-and-next-inline.exp
+   gdb.dwarf2/dw2-double-set-die-type.exp
+   gdb.dwarf2/dw2-inheritance.exp
+   gdb.dwarf2/dw2-inline-many-frames.exp
++  gdb.dwarf2/dw2-inline-small-func.exp
+   gdb.dwarf2/dw2-inline-stepping.exp
++  gdb.dwarf2/dw2-is-stmt-2.exp
++  gdb.dwarf2/dw2-is-stmt.exp
+   gdb.dwarf2/dw2-ranges-base.exp
+   gdb.dwarf2/dw2-ranges.exp
+   gdb.linespec/break-asm-file.exp
+@@ -161,7 +185,6 @@
+   gdb.arch/i386-avx.exp
+   gdb.arch/i386-sse.exp
+   gdb.base/a2-run.exp
+-  gdb.base/advance.exp
+   gdb.base/backtrace.exp
+   gdb.base/bigcore.exp
+   gdb.base/call-ar-st.exp
+@@ -181,11 +204,12 @@
+   gdb.base/info_minsym.exp
+   gdb.base/infoline-reloc-main-from-zero.exp
+   gdb.base/interrupt.exp
+-  gdb.base/jit-so.exp
+-  gdb.base/jit.exp
+   gdb.base/large-frame.exp
+   gdb.base/msym-lang.exp
+   gdb.base/multi-forks.exp
++  gdb.base/nested-subp1.exp
++  gdb.base/nested-subp2.exp
++  gdb.base/nested-subp3.exp
+   gdb.base/pr10179.exp
+   gdb.base/savedregs.exp
+   gdb.base/shlib-call.exp
+@@ -193,7 +217,6 @@
+   gdb.base/siginfo-thread.exp
+   gdb.base/step-indirect-call-thunk.exp
+   gdb.base/structs2.exp
+-  gdb.base/until-nodebug.exp
+   gdb.base/valgrind-disp-step.exp
+   gdb.base/varargs.exp
+   gdb.base/vla-datatypes.exp
+@@ -204,7 +227,6 @@
+   gdb.cp/align.exp
+   gdb.cp/ambiguous.exp
+   gdb.cp/classes.exp
+-  gdb.cp/exception.exp
+   gdb.cp/inherit.exp
+   gdb.cp/koenig.exp
+   gdb.cp/misc.exp
+@@ -235,13 +257,10 @@
+   gdb.multi/base.exp
+   gdb.multi/info-threads.exp
+   gdb.multi/multi-arch.exp
+-  gdb.opencl/callfuncs.exp
+-  gdb.opencl/convs_casts.exp
+-  gdb.opencl/datatypes.exp
+-  gdb.opencl/operators.exp
+-  gdb.opencl/vec_comps.exp
++  gdb.opt/inline-small-func.exp
+   gdb.reverse/step-indirect-call-thunk.exp
+   gdb.server/sysroot.exp
++  gdb.stabs/weird.exp
+   gdb.threads/bp_in_thread.exp
+   gdb.threads/check-libthread-db.exp
+   gdb.threads/dlopen-libpthread.exp
+@@ -297,7 +316,6 @@
+   gdb.trace/trace-condition.exp
+   gdb.trace/trace-enable-disable.exp
+   gdb.trace/tracefile-pseudo-reg.exp
+-  gdb.trace/tspeed.exp
+   gdb.trace/tstatus.exp
+   gdb.trace/unavailable-dwarf-piece.exp
+   gdb.trace/while-dyn.exp
