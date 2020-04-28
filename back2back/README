@@ -688,3 +688,15 @@ Cr 4: ssh smash
       rpm -qa | sort > baremetal-clang-20200423-1/rpm-qa.sort
       tar cf baremetal-clang-20200423-1{.tar,}
       xz baremetal-clang-20200423-1.tar
+
+   # Switch into edit mode.
+      rm -Rf baremetal-{gcc,clang}-20200423-1
+      tar xf 2020-04-23/baremetal-clang-20200423-1.tar.xz --strip-components=1
+      rm -f make-check.log rpm-qa.sort
+      cd src
+      git remote set-url origin git@gitlab.com:gbenson/binutils-gdb.git
+      git fetch
+      git co clang-testsuite-fixes
+      export RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++"
+      make -C../build check TESTS=gdb.opencl/*.exp
+      ...etc
