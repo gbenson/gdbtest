@@ -1,7 +1,8 @@
 
-            IMPROVED    7   0.4%
+            IMPROVED    6   0.3%
            REGRESSED    3   0.2%
           EQUIVALENT    2   0.1%
+          RACY_EQUIV    1   0.1%
         TEST_SKIPPED    5   0.3%
            IDENTICAL 1747  99.0%
   ================================
@@ -13,7 +14,6 @@ IMPROVED:
   gdb.cp/misc.exp                                    // Tue Apr 28 14:27:01
   gdb.cp/operator.exp                                // Tue Apr 28 17:21:09
   gdb.linespec/cpls-ops.exp                          // Tue Apr 28 13:50:42
-  gdb.threads/attach-many-short-lived-threads.exp
   gdb.threads/forking-threads-plus-breakpoint.exp    // Tue Apr 21 16:53:10 (b)
 
 REGRESSED:
@@ -24,6 +24,9 @@ REGRESSED:
 EQUIVALENT:
   gdb.base/so-impl-ld.exp
   gdb.threads/process-dies-while-handling-bp.exp
+
+RACY_EQUIV:
+  gdb.threads/attach-many-short-lived-threads.exp    // RACY
 
 TEST_SKIPPED:
   gdb.opencl/callfuncs.exp                           // Tue Apr 21 16:53:10 (a)

@@ -139,15 +139,29 @@ class SumfileTestcase(object):
     @property
     def counts(self):
         if self._counts is None:
-            self._counts = {}
-            for raw_status, count in self._raw_counts.items():
-                if raw_status.startswith("UN"):
-                    status = "SKIP"
-                else:
-                    status = raw_status[-4:]
-                    assert status in ("PASS", "FAIL")
-                self._counts[status] = self._counts.get(status, 0) + count
+            self._counts = self._cook_counts()
         return self._counts
+
+    @property
+    def racy_counts(self):
+        # KFAIL represents a known problem of GDB itself.
+        # XFAIL indicates a known problem with the environment.
+        # RPASS is something I just made up.
+        return self._cook_counts({"XFAIL": "RPASS"})
+
+    def _cook_counts(self, status_map=None):
+        if status_map is None:
+            status_map = {}
+        result = {}
+        for status, count in self._raw_counts.items():
+            status = status_map.get(status, status)
+            if status.startswith("UN"):
+                status = "SKIP"
+            else:
+                status = status[-4:]
+                assert status in ("PASS", "FAIL")
+            result[status] = result.get(status, 0) + count
+        return result
 
     @property
     def messages(self):
@@ -350,6 +364,11 @@ class SumfileTestcasePair(object):
               absent in the second.  This should only occur when the
              .exp file was removed between runs."""),
 
+            ("RACY_EQUIV",
+             """The test appeared to regress or improve, but in a
+             way that has previously been flagged as being because
+             the test is racy."""),
+
             ("EQUIVALENT",
              """Both runs emitted the same numbers of each status.
              These pairs could be trivial differences, or they could
@@ -378,6 +397,11 @@ class SumfileTestcasePair(object):
         self.b = b
         self._category = None
 
+    RACY_TESTS = dict((shortname, True)
+                      for shortname in (
+        "gdb.threads/attach-many-short-lived-threads.exp",
+                      ))
+
     @property
     def shortname(self):
         if self.a is None:
@@ -385,6 +409,10 @@ class SumfileTestcasePair(object):
         result = self.a.shortname
         assert self.b is None or self.b.shortname == result
         return result
+
+    @property
+    def is_racy(self):
+        return self.RACY_TESTS.get(self.shortname, False)
 
     @property
     def category(self):
@@ -423,6 +451,10 @@ class SumfileTestcasePair(object):
         return self.EQUIVALENT
 
     def _categorize_nonequivalent(self):
+        if (self.is_racy
+              and self.a.racy_counts == self.b.racy_counts):
+            return self.RACY_EQUIV
+
         if (self.b.num_passed < self.a.num_passed
               or self.b.num_failed > self.a.num_failed):
             return self.REGRESSED
