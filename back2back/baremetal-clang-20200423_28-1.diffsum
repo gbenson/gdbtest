@@ -8,27 +8,26 @@
                TOTAL 1764 100.0%
 
 IMPROVED:
-  gdb.base/sigaltstack.exp
-  gdb.cp/inherit.exp
-  gdb.cp/misc.exp
-  gdb.cp/operator.exp
-  gdb.linespec/cpls-ops.exp
+  gdb.base/sigaltstack.exp                           // Tue Apr 28 17:09:38
+  gdb.cp/inherit.exp                                 // Tue Apr 28 14:27:01
+  gdb.cp/misc.exp                                    // Tue Apr 28 14:27:01
+  gdb.cp/operator.exp                                // Tue Apr 28 17:21:09
+  gdb.linespec/cpls-ops.exp                          // Tue Apr 28 13:50:42
   gdb.threads/attach-many-short-lived-threads.exp
-  gdb.threads/forking-threads-plus-breakpoint.exp
+  gdb.threads/forking-threads-plus-breakpoint.exp    // Tue Apr 21 16:53:10 (b)
 
 REGRESSED:
   gdb.base/testenv.exp
-  gdb.cp/classes.exp
-  gdb.cp/koenig.exp
+  gdb.cp/classes.exp                                 // Tue Apr 28 14:27:01
+  gdb.cp/koenig.exp                                  // Tue Apr 28 17:21:09
 
 EQUIVALENT:
   gdb.base/so-impl-ld.exp
   gdb.threads/process-dies-while-handling-bp.exp
 
 TEST_SKIPPED:
-  gdb.opencl/callfuncs.exp
-  gdb.opencl/convs_casts.exp
-  gdb.opencl/datatypes.exp
-  gdb.opencl/operators.exp
-  gdb.opencl/vec_comps.exp
-
+  gdb.opencl/callfuncs.exp                           // Tue Apr 21 16:53:10 (a)
+  gdb.opencl/convs_casts.exp                         // Tue Apr 21 16:53:10 (a)
+  gdb.opencl/datatypes.exp                           // Tue Apr 21 16:53:10 (a)
+  gdb.opencl/operators.exp                           // Tue Apr 21 16:53:10 (a)
+  gdb.opencl/vec_comps.exp                           // Tue Apr 21 16:53:10 (a)
