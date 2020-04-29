@@ -1,0 +1,34 @@
+
+            IMPROVED    7   0.4%
+           REGRESSED    3   0.2%
+          EQUIVALENT    2   0.1%
+        TEST_SKIPPED    5   0.3%
+           IDENTICAL 1747  99.0%
+  ================================
+               TOTAL 1764 100.0%
+
+IMPROVED:
+  gdb.base/sigaltstack.exp
+  gdb.cp/inherit.exp
+  gdb.cp/misc.exp
+  gdb.cp/operator.exp
+  gdb.linespec/cpls-ops.exp
+  gdb.threads/attach-many-short-lived-threads.exp
+  gdb.threads/forking-threads-plus-breakpoint.exp
+
+REGRESSED:
+  gdb.base/testenv.exp
+  gdb.cp/classes.exp
+  gdb.cp/koenig.exp
+
+EQUIVALENT:
+  gdb.base/so-impl-ld.exp
+  gdb.threads/process-dies-while-handling-bp.exp
+
+TEST_SKIPPED:
+  gdb.opencl/callfuncs.exp
+  gdb.opencl/convs_casts.exp
+  gdb.opencl/datatypes.exp
+  gdb.opencl/operators.exp
+  gdb.opencl/vec_comps.exp
+

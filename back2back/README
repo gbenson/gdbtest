@@ -677,6 +677,7 @@ Cr 4: ssh smash
       xz baremetal-gcc-20200423-1.tar
 
    # Run the tests with Clang:
+      tar xPf 2020-04-23/gdbtest-fedora31-upstream-22fed04ff20e.tar.xz
       time make -C /gdbtest/build -k \
         RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++" \
         check >make-check.log 2>&1
@@ -700,3 +701,17 @@ Cr 4: ssh smash
       export RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++"
       make -C../build check TESTS=gdb.opencl/*.exp
       ...etc
+
+   # Semislack full re-run:
+      time make -C /gdbtest/build -k \
+        RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++" \
+	check >make-check.log 2>&1
+      rsync -a build/gdb/testsuite/gdb.sum \
+        gary@192.168.1.3:work/gdbtest/back2back/baremetal-clang-20200428-1.sum
+      rsync -a build/gdb/testsuite/gdb.log \
+        gary@192.168.1.3:work/gdbtest/back2back/baremetal-clang-20200428-1.log
+      mkdir baremetal-clang-20200428-1
+      mv src build make-check.log baremetal-clang-20200428-1
+      rpm -qa | sort > baremetal-clang-20200428-1/rpm-qa.sort
+      tar cf baremetal-clang-20200428-1{.tar,}
+      xz baremetal-clang-20200428-1.tar
