@@ -4,7 +4,7 @@ LABEL maintainer="Gary Benson <gbenson@redhat.com>"
 RUN\
  dnf -y update &&\
  dnf -y install dnf-command'('{builddep,download}')' @buildsys-build\
- clang git &&\
+ clang libomp-devel git &&\
  useradd -r --no-log-init -md/gdbtest gdbtest &&\
  cd /gdbtest &&\
  runuser -u gdbtest -- /usr/bin/dnf -y download --source gdb &&\
