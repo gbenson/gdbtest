@@ -715,3 +715,22 @@ Cr 4: ssh smash
       rpm -qa | sort > baremetal-clang-20200428-1/rpm-qa.sort
       tar cf baremetal-clang-20200428-1{.tar,}
       xz baremetal-clang-20200428-1.tar
+
+New process (without containers)
+================================
+1. ssh smash2
+   sudo dnf -y update
+   sudo reboot
+
+2. ssh -A gdbtest@smash2
+   rm -Rf build make-check.log  #one time?
+   cd src
+   git config --local --add diff.changelog.command /bin/true    #one time
+   git remote add gdb ssh://sourceware.org/git/binutils-gdb.git #one time
+   git fetch --all
+   git co clang-testsuite-fixes
+   export EDITOR="emacs -nw"
+   git rebase -i gdb/master
+   git push -f
+   cd
+   git clone git@github.com:gbenson/gdbtest
