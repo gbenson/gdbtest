@@ -7,6 +7,7 @@ topdir=$HOME
 cd $topdir
 outdir=$(date --iso-8601=date)
 mkdir $outdir build  # Or bomb, if either exists.
+logfile=$(echo $outdir | sed s/-//g)-1
 
 rpm -qa | sort > $topdir/$outdir/rpm-qa.sort
 
@@ -30,6 +31,10 @@ cd build
 cp -a . ../$outdir/with-clang
 make -k check \
   2>&1 | tee $topdir/$outdir/gcc-make-check.log
+for ext in sum log; do
+  cp -a gdb/testsuite/gdb.$ext \
+    $topdir/gdbtest/back2back/baremetal-gcc-$logfile.$ext
+done
 
 cd ..
 mv build $outdir/with-gcc
@@ -38,6 +43,10 @@ cd build
 make -k check \
   RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++" \
   2>&1 | tee $topdir/$outdir/clang-make-check.log
+for ext in sum log; do
+  cp -a gdb/testsuite/gdb.$ext \
+    $topdir/gdbtest/back2back/baremetal-clang-$logfile.$ext
+done
 cp -a . ../$outdir/with-clang
 
 chmod -R -w ../$outdir
