@@ -114,7 +114,7 @@ class SumfileTestcase(object):
             status, shortname = m.groups()
             assert shortname == self.shortname
             message = line[len(m.group(0)):].strip()
-            if status == "DUPLICATE":
+            if status in ("DUPLICATE", "PATH"):
                 assert message in self.results
             else:
                 message = self._dedup(message)
