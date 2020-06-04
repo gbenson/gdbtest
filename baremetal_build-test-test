@@ -16,7 +16,7 @@ cd build
    ../src/configure \
      --with-system-readline \
      --with-separate-debug-dir=/usr/lib/debug \
-     --with-gdb-datadir=/gdbtest/build/gdb/data-directory \
+     --with-gdb-datadir=$topdir/build/gdb/data-directory \
      --disable-binutils \
      --disable-gas \
      --disable-gold \
@@ -25,7 +25,7 @@ cd build
      --disable-ld \
      --disable-sim \
   && make $(rpmbuild --eval='%{?_smp_mflags}') \
-    2>&1 | tee $topdir/$outdir/build.log
+) 2>&1 | tee $topdir/$outdir/build.log
 
 cp -a . ../$outdir/with-clang
 make -k check \
@@ -39,3 +39,5 @@ make -k check \
   RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++" \
   2>&1 | tee $topdir/$outdir/clang-make-check.log
 cp -a . ../$outdir/with-clang
+
+chmod -R -w ../$outdir
