@@ -113,11 +113,16 @@ class SumfileTestcase(object):
         if m is not None:
             status, shortname = m.groups()
             assert shortname == self.shortname
-            message = self._dedup(line[len(m.group(0)):].strip())
-            assert message not in self.results
-            self._raw_counts[status] = self._raw_counts.get(status, 0) + 1
-            self.results[message] = status
-            self._resultlines[message] = len(self.lines)
+            message = line[len(m.group(0)):].strip()
+            if status == "DUPLICATE":
+                assert message in self.results
+            else:
+                message = self._dedup(message)
+                assert message not in self.results
+                self._raw_counts[status] = \
+                    self._raw_counts.get(status, 0) + 1
+                self.results[message] = status
+                self._resultlines[message] = len(self.lines)
         self.lines.append(line)
 
     def _pop_summary(self):
@@ -158,8 +163,10 @@ class SumfileTestcase(object):
             if status.startswith("UN"):
                 status = "SKIP"
             else:
-                status = status[-4:]
-                assert status in ("PASS", "FAIL")
+                tmp = status[-4:]
+                if tmp not in ("PASS", "FAIL"):
+                    raise ValueError(status)
+                status = tmp
             result[status] = result.get(status, 0) + count
         return result
 
