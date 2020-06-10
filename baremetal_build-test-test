@@ -27,9 +27,10 @@ cd build
      --disable-sim \
   && make $(rpmbuild --eval='%{?_smp_mflags}') \
 ) 2>&1 | tee $topdir/$outdir/build.log
-
 cp -a . ../$outdir/with-clang
+
 make -k check \
+  RUNTESTFLAGS="CC_FOR_TARGET=gcc CXX_FOR_TARGET=g++" \
   2>&1 | tee $topdir/$outdir/gcc-make-check.log
 for ext in sum log; do
   cp -a gdb/testsuite/gdb.$ext \
@@ -40,6 +41,7 @@ cd ..
 mv build $outdir/with-gcc
 mv $outdir/with-clang build
 cd build
+
 make -k check \
   RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++" \
   2>&1 | tee $topdir/$outdir/clang-make-check.log
@@ -47,6 +49,6 @@ for ext in sum log; do
   cp -a gdb/testsuite/gdb.$ext \
     $topdir/gdbtest/back2back/baremetal-clang-$logfile.$ext
 done
-cp -a . ../$outdir/with-clang
 
+cp -a . ../$outdir/with-clang
 chmod -R -w ../$outdir
