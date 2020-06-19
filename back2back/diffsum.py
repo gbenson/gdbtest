@@ -62,6 +62,14 @@ class Sumfile(object):
     def compare(self, other):
         return SumfileMatcher(self, other)
 
+    @property
+    def raw_counts(self):
+        result = {}
+        for testcase in self.testcases.values():
+            for key, count in testcase._raw_counts.items():
+                result[key] = result.get(key, 0) + count
+        return result
+
 class SumfileTestcase(object):
     # Lines with this start and end separate the testcases in the file.
     # We can use this to process error messages with non-parallel runs.
@@ -477,6 +485,31 @@ class SumfileTestcasePair(object):
         assert self.b.counts == self.a.counts
         return self.EQUIVALENT
 
+class UncookedCountsReport(object):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+
+    @property
+    def pairs(self):
+        result = {}
+        for key, value in self.a.raw_counts.items():
+            assert key not in result
+            result[key] = [value, 0]
+        for key, value in self.b.raw_counts.items():
+            if key not in result:
+                result[key] = [0, 0]
+            assert result[key][1] == 0
+            result[key][1] = value
+        return result
+
+    def __str__(self):
+        result = []
+        for key, values in self.pairs.items():
+            result.append("%12s: %5d -> %d"
+                          % ( (key,) + tuple(values) ))
+        return "\n".join(result)
+
 class Reporter(object):
     def __init__(self, pairs_by_category):
         self.pairs_by_category = pairs_by_category
@@ -581,10 +614,17 @@ def main():
         "--verbose", "-v", action="count", default=0,
         help="be more verbose")
     parser.add_argument(
+        "--uncooked", action="store_true",
+        help="report raw counts only rather than the standard report")
+    parser.add_argument(
         "--report-errors", action="store_true",
         help="report build errors rather than the standard report")
     args = parser.parse_args()
     a, b = map(Sumfile, args.filenames)
+
+    if args.uncooked:
+        print(UncookedCountsReport(a, b))
+        return
 
     # Group the testresult pairs by category.
     pairs_by_category = {}
