@@ -590,6 +590,8 @@ class GroupedBuildErrorsReport(Reporter):
 
         is_first_line = True
         for msg, filenames in sorted(filenames_by_msg.items()):
+            if msg == "unsupported directive '.stabs'":
+                continue  # I don't care about stabs.
             if is_first_line:
                 is_first_line = False
             else:
