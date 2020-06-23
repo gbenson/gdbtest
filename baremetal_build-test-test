@@ -11,6 +11,13 @@ logfile=$(echo $outdir | sed s/-//g)-1
 
 rpm -qa | sort > $topdir/$outdir/rpm-qa.sort
 
+unset CC_FOR_TARGET
+unset CX_FOR_TARGET
+crowbar="$topdir/gdbtest/crowbar"
+[ -x $crowbar ]
+$crowbar && exit 1
+export RUNTESTFLAGS="CC_FOR_TARGET=$crowbar CXX_FOR_TARGET=$crowbar"
+
 cd build
 (CFLAGS="-g" \
  CXXFLAGS="-g" \
