@@ -20,10 +20,6 @@ class ELFFile(elffile.ELFFile):
 def _compare_section(self, other):
     assert self.name == other.name
     assert type(self) == type(other)
-    if self.data_size == 0:
-        print("\x1B[33m %s %s sh_size = %d\x1B[0m"
-              % (self, repr(self.name), self["sh_size"]))
-        return
     self_data = self.data()
     assert len(self_data) == self.data_size
     other_data = other.data()
@@ -32,16 +28,11 @@ def _compare_section(self, other):
         print("\x1B[33m %s %s sh_size = %d\x1B[0m"
               % (self, repr(self.name), self["sh_size"]))
         return
-    else:
-        print("\x1B[31m-%s %s sh_size = %d\x1B[0m"
-              % (self, repr(self.name), self["sh_size"]))
-        print("\x1B[32m+%s %s sh_size = %d\x1B[0m"
-              % (other, repr(other.name), other["sh_size"]))
-        return
 
-    print(self)
-    print(other)
-    raise NotImplementedError
+    print("\x1B[31m-%s %s sh_size = %d\x1B[0m"
+          % (self, repr(self.name), self["sh_size"]))
+    print("\x1B[32m+%s %s sh_size = %d\x1B[0m"
+          % (other, repr(other.name), other["sh_size"]))
 
 sections.Section.compare = _compare_section
 
