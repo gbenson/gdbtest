@@ -8,17 +8,42 @@ from __future__ import unicode_literals
 
 import sys
 
-from elftools.elf import elffile
+from elftools.elf import elffile, sections
+from itertools import zip_longest
 
 class ELFFile(elffile.ELFFile):
     def compare(self, other):
-        if list(self.section_names) == list(other.section_names):
-            print("section names are the same")
+        for ssec, osec in zip_longest(self.iter_sections(),
+                                      other.iter_sections()):
+            ssec.compare(osec)
 
-    @property
-    def section_names(self):
-        for section in self.iter_sections():
-            yield section.name
+def _compare_section(self, other):
+    assert self.name == other.name
+    assert type(self) == type(other)
+    if self.data_size == 0:
+        print("\x1B[33m %s %s sh_size = %d\x1B[0m"
+              % (self, repr(self.name), self["sh_size"]))
+        return
+    self_data = self.data()
+    assert len(self_data) == self.data_size
+    other_data = other.data()
+    assert len(other_data) == other.data_size
+    if self_data == other_data:
+        print("\x1B[33m %s %s sh_size = %d\x1B[0m"
+              % (self, repr(self.name), self["sh_size"]))
+        return
+    else:
+        print("\x1B[31m-%s %s sh_size = %d\x1B[0m"
+              % (self, repr(self.name), self["sh_size"]))
+        print("\x1B[32m+%s %s sh_size = %d\x1B[0m"
+              % (other, repr(other.name), other["sh_size"]))
+        return
+
+    print(self)
+    print(other)
+    raise NotImplementedError
+
+sections.Section.compare = _compare_section
 
 def main():
     assert len(sys.argv) == 3
