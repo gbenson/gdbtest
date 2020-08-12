@@ -1,5 +1,11 @@
 #!/bin/sh
 
+if [ -z "$STY" ]; then
+    echo 1>&2 "usage: screen -S gdbtest"
+    echo 1>&2 " then: $0 2>&1 | tee build.log"
+    exit 1
+fi
+
 set -ex
 
 topdir=$HOME
