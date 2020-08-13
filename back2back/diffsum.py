@@ -41,7 +41,11 @@ class Sumfile(object):
                 assert key not in self._testcases
                 self._testcases[key] = testcase
             elif testcase is not None:
-                testcase._consume(line)
+                try:
+                    testcase._consume(line)
+                except:
+                    print(repr(line))
+                    raise
             else:
                 self.preamble.append(line)
         if testcase is not None:
