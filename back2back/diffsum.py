@@ -7,6 +7,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
+import difflib
 import operator
 import os
 import re
@@ -489,6 +490,30 @@ class SumfileTestcasePair(object):
         assert self.b.counts == self.a.counts
         return self.EQUIVALENT
 
+    @property
+    def delta(self):
+        return difflib.unified_diff(self.a.lines,
+                                    self.b.lines,
+                                    fromfile=self.a.filename,
+                                    tofile=self.b.filename)
+
+    @property
+    def prettydelta(self):
+        for line in self.delta:
+            color = None
+            if line[0] == "-" and line[:4] != "--- ":
+                color = 31
+            elif line[0] == "+" and line[:4] != "+++ ":
+                color = 32
+            elif line[:3] == "@@ ":
+                color = 36
+            elif line[0] != ' ':
+                color = 1
+            line = line.rstrip()
+            if color is not None:
+                line = "\x1B[%dm%s\x1B[0m" % (color, line)
+            yield line
+
 class UncookedCountsReport(object):
     def __init__(self, a, b):
         self.a = a
@@ -551,9 +576,20 @@ class FilesByCategoryReport(Reporter):
                 is_first_line = False
             else:
                 yield ""
-            yield "%s:" % cat
+            if (self.verbosity == 1
+                and cat in (SumfileTestcasePair.IMPROVED,
+                            SumfileTestcasePair.RACY_EQUIV)):
+                continue
+            if self.verbosity < 1:
+                yield "%s:" % cat
+            else:
+                yield "\x1B[33m== \x1B[1m%s:\x1B[0m" % cat
             for pair in self.pairs_by_category[cat]:
-                yield "  " + pair.shortname
+                if self.verbosity < 1:
+                    yield "  " + pair.shortname
+                    continue
+                for line in pair.prettydelta:
+                    yield line
 
 class BuildErrorsReport(Reporter):
     @property
@@ -626,6 +662,7 @@ def main():
         "--report-errors", action="store_true",
         help="report build errors rather than the standard report")
     args = parser.parse_args()
+    Reporter.verbosity = args.verbose
     a, b = map(Sumfile, args.filenames)
 
     if args.uncooked:
