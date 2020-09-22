@@ -177,8 +177,8 @@ class SumfileTestcase(object):
         if self._raw_counts is None:
             self._raw_counts = {}
             for result in self.results:
-                self._raw_counts[result.status] \
-                    = self._raw_counts.get(result.status, 0) + 1
+                self._raw_counts[result.raw_status] \
+                    = self._raw_counts.get(result.raw_status, 0) + 1
         return self._raw_counts
 
     @property
@@ -348,10 +348,10 @@ class SumfileTestcaseResult(object):
     The raw status can be *PASS, *FAIL, or UN*.
     The cooked status will be one of PASS, FAIL or SKIP.
     """
-    def __init__(self, testcase, rel_lineno, status, message):
+    def __init__(self, testcase, rel_lineno, raw_status, message):
         self.testcase = testcase
         self.rel_lineno = rel_lineno
-        self.status = status
+        self.raw_status = raw_status
         self.message = message
 
     @property
@@ -360,7 +360,7 @@ class SumfileTestcaseResult(object):
 
     @property
     def as_tuple(self):
-        return self.status, self.testname, self.message
+        return self.raw_status, self.testname, self.message
 
     def __eq__(self, other):
         return not (self != other)
@@ -520,16 +520,26 @@ class SumfileTestcasePair(object):
               and self.a.racy_counts == self.b.racy_counts):
             return self.RACY_EQUIV
 
-        if (self.b.num_passed < self.a.num_passed
-              or self.b.num_failed > self.a.num_failed):
+        # Less passes is unambiguously a regression.
+        if self.b.num_passed < self.a.num_passed:
             return self.REGRESSED
 
+        # Less skips without less passes is an improvement
+        # regardless of whether we have more failures now.
+        if self.b.num_skipped < self.a.num_skipped:
+            return self.IMPROVED
+
+        # More failures without less skips is a regression.
+        if self.b.num_failed > self.a.num_failed:
+            return self.REGRESSED
+
+        # More skips without less passes is likely intentional.
         if self.b.num_skipped > self.a.num_skipped:
             return self.PART_SKIPPED
 
-        if (self.b.num_passed > self.a.num_passed
-              or self.b.num_failed < self.a.num_failed
-              or self.b.num_skipped < self.a.num_skipped):
+        # More passes without less skips or more failures is an
+        # improvement.
+        if self.b.num_passed > self.a.num_passed:
             return self.IMPROVED
 
         assert self.b.counts == self.a.counts
