@@ -208,7 +208,14 @@ class SumfileTestcase(EquivalatableMixin):
 
     # Comparisons.
     def not_equivalent_to(self, other):
-        return other is None or self.raw_counts != other.raw_counts
+        if other is None:
+            return True
+        if len(self.results) != len(other.results):
+            return True
+        for a, b in zip(self.results, other.results):
+            if a.not_equivalent_to(b):
+                return True
+        return False
 
     # Queries.
     @property
@@ -330,7 +337,7 @@ class SumfileTestcase(EquivalatableMixin):
             return True
         return False
 
-class SumfileTestcaseResult(object):
+class SumfileTestcaseResult(EquivalatableMixin):
     """One single result (one status) from one DejaGnu testcase.
 
     Each SumfileTestcaseResult is the result of a call to one of the
@@ -368,6 +375,13 @@ class SumfileTestcaseResult(object):
 
     def __ne__(self, other):
         return other is None or self.as_tuple != other.as_tuple
+
+    def not_equivalent_to(self, other):
+        if other is None:
+            return True
+        if self == other:
+            return False
+        return True
 
 class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
