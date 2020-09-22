@@ -245,6 +245,14 @@ class SumfileTestcase(EquivalatableMixin):
     def _count(self, status):
         return self.counts.get(status, 0)
 
+    @property
+    def num_unskipped(self):
+        return self.num_passed + self.num_failed
+
+    @property
+    def _skipped_unskipped(self):
+        return self.num_skipped, self.num_unskipped
+
     # Compiler failure message extraction.
     BUILDERROR_STARTLINE_PREFIX = "gdb compile failed,"
 
@@ -506,7 +514,62 @@ class SumfileTestcasePair(object):
             return self.IDENTICAL
         return self.EQUIVALENT
 
+    # @property
+    # def _racy_changes(self):
+    #     # Racy changes are nondeterministic *PASS<=>*FAIL flips.
+    #     # This means we can quickly bail if the total number of
+    #     # tests changed.
+    #     if self.a._skipped_unskipped != self.b._skipped_unskipped:
+    #         return
+
+    #     sentinel = object()
+    #     for _messages in zip_longest(self.a.messages,
+    #                                  self.b.messages,
+    #                                  fillvalue=sentinel):
+    #         # We shouldn't ever get a sentinel, the above check
+    #         # should ensure the two lists have the same length.
+    #         assert sentinel not in _messages
+
+    #         msg_a, msg_b = _messages
+    #         status_a = self.a.results[msg_a]
+    #         status_b = self.b.results[msg_b]
+
+    #         if a == b:
+    #             continue
+
+    #     a_messages = list[self.a.messages]
+
     def _categorize_nonequivalent(self):
+        # # First rule out noise from racy tests.
+        # if (self.b.num_skipped == self.a.num_skipped
+
+        #     print("\x1B[1;33m%s\x1B[0m" % self.shortname)
+
+        #     a_messages = list[self.a.messages]
+        #     b_messages = list[self.b.messages]
+        #     for a in a_messages:
+                
+
+        #     sentinel = object()
+        #     for a, b in zip_longest(self.a.messages,
+        #                             self.b.messages,
+        #                             fillvalue=sentinel):
+        #         if a == b:
+        #             print(" " + a)
+        #         if a != b:
+        #             print("\x1B[31m-%s\x1B[0m" % self.a.lines[self.a._resultlines[a]].rstrip())
+        #             print("\x1B[32m+%s\x1B[0m" % self.b.lines[self.b._resultlines[b]].rstrip())
+
+        #     raise NotImplementedError
+
+        #     deltas = self.b.counts.copy()
+        #     for status, count in self.a.counts.items():
+        #         deltas[status] = deltas.get(status, 0) - count
+        #         print(self.a.counts,
+        #               "=>", self.b.counts,
+        #               "=", repr(deltas))
+        #         raise NotImplementedError
+
         # Less passes is unambiguously a regression.
         if self.b.num_passed < self.a.num_passed:
             return self.REGRESSED
