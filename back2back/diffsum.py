@@ -477,6 +477,10 @@ class SumfileTestcasePair(object):
     def category(self):
         if self._category is None:
             self._category = self._categorize()
+            if self._category == self.EQUIVALENT:
+                print("\x1B[1;33mNoise?\x1B[0m")
+                print("\n".join(self.prettydelta))
+                raise NotImplementedError
         return self._category
 
     def _categorize(self):
@@ -525,8 +529,17 @@ class SumfileTestcasePair(object):
         if self.b.num_passed > self.a.num_passed:
             return self.IMPROVED
 
-        assert self.b.counts == self.a.counts
-        return self.EQUIVALENT
+        # XXX is that everything?
+        if self.b.counts == self.a.counts:
+            return self.EQUIVALENT
+
+        deltas = self.b.counts.copy()
+        for status, count in self.a.counts.items():
+            deltas[status] = deltas.get(status, 0) - count
+        print(self.a.counts,
+              "=>", self.b.counts,
+              "=", repr(deltas))
+        raise NotImplementedError
 
     @property
     def delta(self):
