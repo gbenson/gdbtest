@@ -124,7 +124,7 @@ class SumfileTestcase(object):
         self.lines = [runline]
         self.raw_counts = {}   # keys = *PASS, *FAIL, UN*
         self._counts = None    # keys = PASS, FAIL, SKIP only
-        self.results = {}
+        self._status_by_message = {}
         self._resultlines = {}
 
     @property
@@ -141,7 +141,7 @@ class SumfileTestcase(object):
     def _dedup(self, message):
         key, count = message, 0
         while True:
-            if key not in self.results:
+            if key not in self._status_by_message:
                 return key
             count += 1
             key = "%s __diffsum_dedup_%08d" % (message, count)
@@ -154,13 +154,13 @@ class SumfileTestcase(object):
             assert shortname == self.shortname
             message = line[len(m.group(0)):].strip()
             if status in ("DUPLICATE", "PATH"):
-                assert message in self.results
+                assert message in self._status_by_message
             else:
                 message = self._dedup(message)
-                assert message not in self.results
+                assert message not in self._status_by_message
                 self.raw_counts[status] = \
                     self.raw_counts.get(status, 0) + 1
-                self.results[message] = status
+                self._status_by_message[message] = status
                 self._resultlines[message] = len(self.lines)
         self.lines.append(line)
 
@@ -485,7 +485,7 @@ class SumfileTestcasePair(object):
         return self._categorize_nonequivalent()
 
     def _categorize_equivalent(self):
-        if self.a.results == self.b.results:
+        if self.a._status_by_message == self.b._status_by_message:
             sentinel = object()
             for a, b in zip_longest(self.a.messages,
                                     self.b.messages,
