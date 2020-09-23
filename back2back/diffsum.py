@@ -17,6 +17,16 @@ from functools import reduce
 from itertools import zip_longest
 
 class Sumfile(object):
+    """A parsed summary (.sum) log file output from DejaGnu.
+
+    DejaGnu's main output is a summary log file with a name derived
+    from the name of the tool being tested.  For example, after
+    running `runtest --tool gdb` a summary log file will be written
+    to gdb.sum.
+
+    https://www.gnu.org/software/dejagnu/manual/Summary-log-file.html
+    """
+
     def __init__(self, filename, testclass=None):
         self.filename = filename
         if testclass is None:
@@ -26,6 +36,7 @@ class Sumfile(object):
 
     @property
     def testcases(self):
+        """Dictionary of all testcases recorded in this file."""
         if self._testcases is None:
             self._read()
         return self._testcases
@@ -76,6 +87,19 @@ class Sumfile(object):
         return result
 
 class SumfileTestcase(object):
+    """The complete summary log output of one DejaGnu testcase.
+
+    The DejaGnu _testsuite_ for a tool is contained within a directory
+    named `testsuite` in that tool's source directory.  For example,
+    GDB's testsuite is contained within "/path/to/src/gdb/testsuite".
+
+    Each DejaGnu _testcase_ goes in a subdirectory whose name begins
+    with the tool name.  For example, `gdb.base/test1.exp` is one GDB
+    testcase, `gdb.base/test2.exp` is a second GDB testcase, etc.
+
+    https://www.gnu.org/software/dejagnu/manual/Adding-a-new-testsuite.html
+    """
+
     # Lines with this start and end separate the testcases in the file.
     # We can use this to process error messages with non-parallel runs.
     RUNLINE_PREFIX = "Running "
@@ -105,10 +129,12 @@ class SumfileTestcase(object):
 
     @property
     def filename(self):
+        """This testcase's filename, as recorded by DejaGnu."""
         return self.lines[0][len(self.RUNLINE_PREFIX)
                              :-len(self.RUNLINE_SUFFIX)]
     @property
     def shortname(self):
+        """This testcase's filename, relative to the testsuite."""
         dirname, basename = os.path.split(self.filename)
         return os.path.join(os.path.basename(dirname), basename)
 
