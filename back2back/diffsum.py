@@ -12,9 +12,9 @@ import operator
 import os
 import re
 import sys
+import weakref
 
 from functools import reduce
-from itertools import zip_longest
 
 class Sumfile(object):
     """A parsed summary (.sum) log file output from DejaGnu.
@@ -122,10 +122,11 @@ class SumfileTestcase(object):
     def __init__(self, runline):
         assert self.is_runline(runline)
         self.lines = [runline]
-        self.raw_counts = {}   # keys = *PASS, *FAIL, UN*
-        self._counts = None    # keys = PASS, FAIL, SKIP only
-        self._status_by_message = {}
-        self._resultlines = {}
+        self.results = []
+        self._reset_counts()
+
+    def _reset_counts(self):
+        self._counts = self._raw_counts = None
 
     @property
     def filename(self):
@@ -138,34 +139,23 @@ class SumfileTestcase(object):
         dirname, basename = os.path.split(self.filename)
         return os.path.join(os.path.basename(dirname), basename)
 
-    def _dedup(self, message):
-        key, count = message, 0
-        while True:
-            if key not in self._status_by_message:
-                return key
-            count += 1
-            key = "%s __diffsum_dedup_%08d" % (message, count)
-
     def _consume(self, line):
-        assert self._counts is None
         m = self.RESULTLINE_RE.match(line)
         if m is not None:
             status, shortname = m.groups()
             assert shortname == self.shortname
             message = line[len(m.group(0)):].strip()
-            if status in ("DUPLICATE", "PATH"):
-                assert message in self._status_by_message
-            else:
-                message = self._dedup(message)
-                assert message not in self._status_by_message
-                self.raw_counts[status] = \
-                    self.raw_counts.get(status, 0) + 1
-                self._status_by_message[message] = status
-                self._resultlines[message] = len(self.lines)
+            result = SumfileTestcaseResult(
+                weakref.proxy(self),
+                len(self.lines),
+                status,
+                message)
+            if status not in ("DUPLICATE", "PATH"):
+                self._reset_counts()
+                self.results.append(result)
         self.lines.append(line)
 
     def _pop_summary(self):
-        assert self._counts is None
         assert self.lines
         for index in range(-1, -1-len(self.lines), -1):
             line = self.lines[index]
@@ -181,7 +171,24 @@ class SumfileTestcase(object):
         return result
 
     @property
+    def raw_counts(self):
+        """Raw status code counts.
+
+        Keys: *PASS, *FAIL, UN*.
+        """
+        if self._raw_counts is None:
+            self._raw_counts = {}
+            for result in self.results:
+                self._raw_counts[result.status] \
+                    = self._raw_counts.get(result.status, 0) + 1
+        return self._raw_counts
+
+    @property
     def counts(self):
+        """Cooked status code counts.
+
+        Keys: PASS, FAIL, and SKIP only.
+        """
         if self._counts is None:
             self._counts = self._cook_counts()
         return self._counts
@@ -342,6 +349,34 @@ class SumfileTestcase(object):
             return True
         return False
 
+class SumfileTestcaseResult(object):
+    """One single result (one status) from one DejaGnu testcase.
+
+    Each SumfileTestcaseResult is the result of a call to one of the
+    commands pass, fail, unresolved, unsupported, or untested.
+    The raw status can be *PASS, *FAIL, or UN*.
+    The cooked status will be one of PASS, FAIL or SKIP.
+    """
+    def __init__(self, testcase, rel_lineno, status, message):
+        self.testcase = testcase
+        self.rel_lineno = rel_lineno
+        self.status = status
+        self.message = message
+
+    @property
+    def testname(self):
+        return self.testcase.shortname
+
+    @property
+    def as_tuple(self):
+        return self.status, self.testname, self.message
+
+    def __eq__(self, other):
+        return not (self != other)
+
+    def __ne__(self, other):
+        return other is None or self.as_tuple != other.as_tuple
+
 class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
         self._sfa = sumfile_a
@@ -485,15 +520,8 @@ class SumfileTestcasePair(object):
         return self._categorize_nonequivalent()
 
     def _categorize_equivalent(self):
-        if self.a._status_by_message == self.b._status_by_message:
-            sentinel = object()
-            for a, b in zip_longest(self.a.messages,
-                                    self.b.messages,
-                                    fillvalue=sentinel):
-                if a != b:
-                    break
-            else:
-                return self.IDENTICAL
+        if self.a.results == self.b.results:
+            return self.IDENTICAL
         return self.EQUIVALENT
 
     def _categorize_nonequivalent(self):
