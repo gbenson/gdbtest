@@ -13,26 +13,18 @@ import sys
 
 from functools import reduce
 
-# https://www.gnu.org/software/dejagnu/manual/Summary-log-file.html
-# "===2.3.1 Summary log file==="
-# "DejaGnu always produces a summary (.sum) output file.
-# This summary lists the names of all test files run.
-# For each test file, one line of output from each [pass,fail]..."
-# "For example, after running runtest --tool binutils a summary log
-# file will be written to binutils.sum."
-
-# https://www.gnu.org/software/dejagnu/manual/Adding-a-new-testsuite.html
-# "The testsuite for a new tool should always be located in that tool's
-# source directory."
-# "Under this directory, the test cases go in a subdirectory whose name
-# begins with the tool name. For example, for a tool named gdb, each
-# subdirectory containing testsuites must start with ‘gdb.’."
-
-# Summary log file
-# Testsuite gdb.base
-# Testfile, testcase: gdb.base/test.exp
 
 class Sumfile(object):
+    """A parsed summary (.sum) log file output from DejaGnu.
+
+    DejaGnu's main output is a summary log file with a name derived
+    from the name of the tool being tested.  For example, after
+    running `runtest --tool gdb` a summary log file will be written
+    to gdb.sum.
+
+    https://www.gnu.org/software/dejagnu/manual/Summary-log-file.html
+    """
+
     def __init__(self, filename, testclass=None):
         self.filename = filename
         if testclass is None:
@@ -42,6 +34,7 @@ class Sumfile(object):
 
     @property
     def testcases(self):
+        """Dictionary of all testcases recorded in this file."""
         if self._testcases is None:
             self._read()
         return self._testcases
@@ -80,6 +73,19 @@ class Sumfile(object):
         return SumfileMatcher(self, other)
 
 class SumfileTestcase(object):
+    """The complete summary log output of one DejaGnu testcase.
+
+    The DejaGnu _testsuite_ for a tool is contained within a directory
+    named `testsuite` in that tool's source directory.  For example,
+    GDB's testsuite is contained within "/path/to/src/gdb/testsuite".
+
+    Each DejaGnu _testcase_ goes in a subdirectory whose name begins
+    with the tool name.  For example, `gdb.base/test1.exp` is one GDB
+    testcase, `gdb.base/test2.exp` is a second GDB testcase, etc.
+
+    https://www.gnu.org/software/dejagnu/manual/Adding-a-new-testsuite.html
+    """
+
     # Lines with this start and end separate the testcases in the file.
     # We can use this to process error messages with non-parallel runs.
     RUNLINE_PREFIX = "Running "
@@ -103,16 +109,16 @@ class SumfileTestcase(object):
         assert self.is_runline(runline)
         self.lines = [runline]
         self.results = []
-        self.results_by_msg = {}
+        self._results_by_message = {}
 
     @property
     def filename(self):
-        """The full filename of the test file."""
+        """This testcase's filename, as recorded by DejaGnu."""
         return self.lines[0][len(self.RUNLINE_PREFIX)
                              :-len(self.RUNLINE_SUFFIX)]
     @property
     def shortname(self):
-        """The test file's filename, relative to the tests directory."""
+        """This testcase's filename, relative to the testsuite."""
         dirname, basename = os.path.split(self.filename)
         return os.path.join(os.path.basename(dirname), basename)
 
@@ -128,9 +134,9 @@ class SumfileTestcase(object):
                 message,
                 len(self.lines))
             self.results.append(result)
-            if message not in self.results_by_msg:
-                self.results_by_msg[message] = []
-            self.results_by_msg[message].append(result)
+            if message not in self._results_by_message:
+                self._results_by_message[message] = []
+            self._results_by_message[message].append(result)
         self.lines.append(line)
 
     def _pop_summary(self):
@@ -173,7 +179,7 @@ if False:
     def counts(self):
         if self._counts is None:
             self._counts = {}
-            for raw_status, count in self._raw_counts.items():
+            for raw_status, count in self.raw_counts.items():
                 if raw_status.startswith("UN"):
                     status = "SKIP"
                 else:
@@ -189,7 +195,7 @@ if False:
 
     # Canonical comparisons.
     def not_equivalent_to(self, other):
-        return other is None or self._raw_counts != other._raw_counts
+        return other is None or self.raw_counts != other.raw_counts
 
     # Derived comparisons.
     def is_equivalent_to(self, other):
@@ -198,7 +204,7 @@ if False:
     # Queries.
     @property
     def has_results(self):
-        return not (not self._raw_counts)
+        return not (not self.raw_counts)
 
     @property
     def all_passed(self):
