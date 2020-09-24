@@ -78,6 +78,11 @@ class Sumfile(object):
     def compare(self, other):
         return SumfileMatcher(self, other)
 
+    @classmethod
+    def correct_racy_failures(cls, a, b):
+        for pair in a.compare(b):
+            pair._correct_racy_failures()
+
     @property
     def raw_counts(self):
         result = {}
@@ -508,6 +513,10 @@ class SumfileTestcasePair(object):
         assert self.b is None or self.b.shortname == result
         return result
 
+    def _correct_racy_failures(self):
+        if self.a is not None:
+            type(self.a).correct_racy_failures(b)
+
     @property
     def category(self):
         if self._category is None:
@@ -515,7 +524,7 @@ class SumfileTestcasePair(object):
             if self._category == self.EQUIVALENT:
                 print("\x1B[1;33mNoise?\x1B[0m")
                 print("\n".join(self.prettydelta))
-                raise NotImplementedError
+                #raise NotImplementedError
         return self._category
 
     def _categorize(self):
@@ -802,9 +811,15 @@ def main():
     parser.add_argument(
         "--report-errors", action="store_true",
         help="report build errors rather than the standard report")
+    parser.add_argument(
+        "--no-correct-racy", action="store_true",
+        help="don't correct changes caused by racy tests")
     args = parser.parse_args()
     Reporter.verbosity = args.verbose
     a, b = map(Sumfile, args.filenames)
+
+    if not args.no_correct_racy:
+        Sumfile.correct_racy_failures(a, b, verbosity=args.verbose)
 
     if args.uncooked:
         print(UncookedCountsReport(a, b))
