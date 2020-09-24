@@ -210,13 +210,12 @@ class SumfileTestcase(EquivalatableMixin):
     def not_equivalent_to(self, other):
         if other is None:
             return True
-        if self.raw_counts == other.raw_counts:
-            return False
-        # XXX above is standard, below is racy
         if len(self.results) != len(other.results):
             return True
-
-        raise NotImplementedError(self.shortname)
+        for a, b in zip(self.results, other.results):
+            if a.not_equivalent_to(b):
+                return True
+        return False
 
     # Queries.
     @property
@@ -376,6 +375,8 @@ class SumfileTestcaseResult(object):
 
     def __ne__(self, other):
         return other is None or self.as_tuple != other.as_tuple
+
+    def 
 
 class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
