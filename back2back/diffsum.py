@@ -599,19 +599,22 @@ class FilesByCategoryReport(Reporter):
                 is_first_line = False
             else:
                 yield ""
-            if (self.verbosity == 1
-                    and cat == SumfileTestcasePair.IMPROVED):
-                continue
-            if self.verbosity < 1:
-                yield "%s:" % cat
-            else:
-                yield "\x1B[33m== \x1B[1m%s:\x1B[0m" % cat
-            for pair in self.pairs_by_category[cat]:
-                if self.verbosity < 1:
-                    yield "  " + pair.shortname
-                    continue
-                for line in pair.prettydelta:
-                    yield line
+            generate_lines = (
+                self.verbosity > int(cat == SumfileTestcasePair.IMPROVED)
+                and self._diff_lines or self._list_lines)
+            for line in generate_lines(cat):
+                yield line
+
+    def _list_lines(self, cat):
+        yield "%s:" % cat
+        for pair in self.pairs_by_category[cat]:
+            yield "  " + pair.shortname
+
+    def _diff_lines(self, cat):
+        yield "\x1B[33m== \x1B[1m%s:\x1B[0m" % cat
+        for pair in self.pairs_by_category[cat]:
+            for line in pair.prettydelta:
+                yield line
 
 class BuildErrorsReport(Reporter):
     @property
