@@ -187,15 +187,9 @@ class SumfileTestcase(object):
         """
         if self._counts is None:
             self._counts = {}
-            for status, count in self.raw_counts.items():
-                if status.startswith("UN"):
-                    status = "SKIP"
-                else:
-                    tmp = status[-4:]
-                    if tmp not in ("PASS", "FAIL"):
-                        raise ValueError(status)
-                    status = tmp
-                self._counts[status] = self._counts.get(status, 0) + count
+            for result in self.results:
+                self._counts[result.status] \
+                    = self._counts.get(result.status, 0) + 1
         return self._counts
 
     # Canonical comparisons.
@@ -343,6 +337,17 @@ class SumfileTestcaseResult(object):
     @property
     def testname(self):
         return self.testcase.shortname
+
+    @property
+    def status(self):
+        result = self.raw_status
+        if result.startswith("UN"):
+            result = "SKIP"
+        else:
+            result = result[-4:]
+        if result not in ("PASS", "FAIL", "SKIP"):
+            raise ValueError(self.raw_status)
+        return result
 
     @property
     def as_tuple(self):
