@@ -337,7 +337,7 @@ class SumfileTestcase(EquivalatableMixin):
             return True
         return False
 
-class SumfileTestcaseResult(object):
+class SumfileTestcaseResult(EquivalatableMixin):
     """One single result (one status) from one DejaGnu testcase.
 
     Each SumfileTestcaseResult is the result of a call to one of the
@@ -370,13 +370,39 @@ class SumfileTestcaseResult(object):
     def as_tuple(self):
         return self.raw_status, self.testname, self.message
 
+    def __str__(self):
+        return str(self.as_tuple)
+
     def __eq__(self, other):
         return not (self != other)
 
     def __ne__(self, other):
         return other is None or self.as_tuple != other.as_tuple
 
-    def 
+    def not_equivalent_to(self, other):
+        if other is None:
+            return True
+        if self == other:
+            return False
+        if self.status == "PASS":
+            not_racy = other.not_racy_fail_of(self)
+        else:
+            not_racy = self.not_racy_fail_of(other)
+        if not not_racy:
+            assert self.testname == other.testname
+            print("%s: %s => %s: treating as racy"
+                  % (self.testname,
+                     (self.status, self.message),
+                     (other.status, other.message)),
+                  file=sys.stderr)
+        return not_racy
+
+    def not_racy_fail_of(self, other):
+        return (other is None
+                or self.testname != other.testname
+                or self.status != "FAIL"
+                or other.status != "PASS"
+                or not self.message.startswith(other.message))
 
 class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
