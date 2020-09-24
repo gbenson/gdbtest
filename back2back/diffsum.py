@@ -208,7 +208,15 @@ class SumfileTestcase(EquivalatableMixin):
 
     # Comparisons.
     def not_equivalent_to(self, other):
-        return other is None or self.raw_counts != other.raw_counts
+        if other is None:
+            return True
+        if self.raw_counts == other.raw_counts:
+            return False
+        # XXX above is standard, below is racy
+        if len(self.results) != len(other.results):
+            return True
+
+        raise NotImplementedError(self.shortname)
 
     # Queries.
     @property
@@ -244,14 +252,6 @@ class SumfileTestcase(EquivalatableMixin):
 
     def _count(self, status):
         return self.counts.get(status, 0)
-
-    @property
-    def num_unskipped(self):
-        return self.num_passed + self.num_failed
-
-    @property
-    def _skipped_unskipped(self):
-        return self.num_skipped, self.num_unskipped
 
     # Compiler failure message extraction.
     BUILDERROR_STARTLINE_PREFIX = "gdb compile failed,"
