@@ -184,6 +184,10 @@ class SumfileTestcase(EquivalatableMixin):
         self.lines[index:len(self.lines)] = []
         return result
 
+    def _replace_result(self, orig, repl):
+        self.results[self.results.index(orig)] = repl
+        self._reset_counts()
+
     @property
     def raw_counts(self):
         """Raw status code counts: *PASS, *FAIL, UN*.
@@ -370,6 +374,9 @@ class SumfileTestcaseResult(EquivalatableMixin):
     def as_tuple(self):
         return self.raw_status, self.testname, self.message
 
+    def __str__(self):
+        return ": ".join(self.as_tuple)
+
     def __eq__(self, other):
         return not (self != other)
 
@@ -381,7 +388,64 @@ class SumfileTestcaseResult(EquivalatableMixin):
             return True
         if self == other:
             return False
+        if self.is_failure_of(other):
+            passer, failer = other, self
+        elif other.is_failure_of(self):
+            passer, failer = self, other
+        else:
+            return True
+        if self.is_racy_failure(failer, passer):
+            # XXX: hack: this mutates the failer's testcase.
+            failer.testcase._replace_result(failer, passer)
+            return False
         return True
+
+    def is_failure_of(self, other):
+        """Returns True if self is the FAILure to other's PASS."""
+        return not self.not_failure_of(other)
+
+    def not_failure_of(self, other):
+        """Returns False if self is the FAILure to other's PASS."""
+        return (other is None
+                or self.testname != other.testname
+                or self.status != "FAIL"
+                or other.status != "PASS"
+                or not self.message.startswith(other.message))
+
+    RACYFAIL_REGEXPS_FILENAME = "racy.tests"
+    RACYFAIL_REGEXPS = None
+
+    @classmethod
+    def _load_racy_failure_regexps(cls):
+        if cls.RACYFAIL_REGEXPS is not None:
+            return
+        cls.RACYFAIL_REGEXPS = []
+        topdir = os.path.dirname(os.path.realpath(__file__))
+        filename = os.path.join(topdir, cls.RACYFAIL_REGEXPS_FILENAME)
+        for line in open(filename).readlines():
+            line = line.rstrip()
+            if line:
+                cls.RACYFAIL_REGEXPS.append(re.compile(line))
+
+    @classmethod
+    def is_known_racy_failure(cls, failer, passer):
+        cls._load_racy_failure_regexps()
+        failer_str = str(failer)
+        for expr in cls.RACYFAIL_REGEXPS:
+            if expr.search(failer_str) is not None:
+                return True
+
+    @classmethod
+    def is_racy_failure(cls, failer, passer):
+        assert failer.is_failure_of(passer)
+        assert not passer.is_failure_of(failer)
+        if cls.is_known_racy_failure(failer, passer):
+            return True
+        if (failer.raw_status in ("KFAIL", "XFAIL")
+              and failer.testname.startswith("gdb.threads/")):
+            print("warning: %s: ignored (racy)" % failer, file=sys.stderr)
+            return True
+        return False
 
 class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
