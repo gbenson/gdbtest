@@ -82,7 +82,7 @@ class Sumfile(object):
     def raw_counts(self):
         result = {}
         for testcase in self.testcases.values():
-            for key, count in testcase._raw_counts.items():
+            for key, count in testcase.raw_counts.items():
                 result[key] = result.get(key, 0) + count
         return result
 
@@ -122,7 +122,7 @@ class SumfileTestcase(object):
     def __init__(self, runline):
         assert self.is_runline(runline)
         self.lines = [runline]
-        self._raw_counts = {}  # keys = *PASS, *FAIL, UN*
+        self.raw_counts = {}   # keys = *PASS, *FAIL, UN*
         self._counts = None    # keys = PASS, FAIL, SKIP only
         self.results = {}
         self._resultlines = {}
@@ -158,8 +158,8 @@ class SumfileTestcase(object):
             else:
                 message = self._dedup(message)
                 assert message not in self.results
-                self._raw_counts[status] = \
-                    self._raw_counts.get(status, 0) + 1
+                self.raw_counts[status] = \
+                    self.raw_counts.get(status, 0) + 1
                 self.results[message] = status
                 self._resultlines[message] = len(self.lines)
         self.lines.append(line)
@@ -197,7 +197,7 @@ class SumfileTestcase(object):
         if status_map is None:
             status_map = {}
         result = {}
-        for status, count in self._raw_counts.items():
+        for status, count in self.raw_counts.items():
             status = status_map.get(status, status)
             if status.startswith("UN"):
                 status = "SKIP"
@@ -216,7 +216,7 @@ class SumfileTestcase(object):
 
     # Canonical comparisons.
     def not_equivalent_to(self, other):
-        return other is None or self._raw_counts != other._raw_counts
+        return other is None or self.raw_counts != other.raw_counts
 
     # Derived comparisons.
     def is_equivalent_to(self, other):
@@ -225,7 +225,7 @@ class SumfileTestcase(object):
     # Queries.
     @property
     def has_results(self):
-        return not (not self._raw_counts)
+        return not (not self.raw_counts)
 
     @property
     def all_passed(self):
