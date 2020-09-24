@@ -86,7 +86,21 @@ class Sumfile(object):
                 result[key] = result.get(key, 0) + count
         return result
 
-class SumfileTestcase(object):
+class EquivalatableMixin(object):
+    """Mixin for objects that can be equivalent to other objects.
+
+    Equivalent is less strict than equal.  Two equal objects are by
+    definition equivalent, but two objects that are equivalent are
+    are not necessarily equal.
+    """
+
+    def not_equivalent_to(self, other):
+        raise NotImplementedError
+
+    def is_equivalent_to(self, other):
+        return not self.not_equivalent_to(other)
+
+class SumfileTestcase(EquivalatableMixin):
     """The complete summary log output of one DejaGnu testcase.
 
     The DejaGnu _testsuite_ for a tool is contained within a directory
@@ -192,13 +206,9 @@ class SumfileTestcase(object):
                     = self._counts.get(result.status, 0) + 1
         return self._counts
 
-    # Canonical comparisons.
+    # Comparisons.
     def not_equivalent_to(self, other):
         return other is None or self.raw_counts != other.raw_counts
-
-    # Derived comparisons.
-    def is_equivalent_to(self, other):
-        return not self.not_equivalent_to(other)
 
     # Queries.
     @property
