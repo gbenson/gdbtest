@@ -16,7 +16,7 @@ def filename_pairs():
     for gcc1_gcc2 in zip(gcc_filenames, gcc_filenames[1:] + [None]):
         g1, g2 = gcc1_gcc2
         c1 = g1.replace("gcc", "clang")
-        #yield g1, c1      # Each baremetal-{gcc,clang}-* pair.
+        yield g1, c1      # Each baremetal-{gcc,clang}-* pair.
         if g2 is not None:
             yield g1, g2  # Each baremetal-gcc-{YYYYMMDD[N,N+1]} pair.
             c2 = g2.replace("gcc", "clang")
