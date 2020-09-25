@@ -1,2 +1,6 @@
 ^XFAIL: gdb\.threads/attach-many-short-lived-threads\.exp: iter \d+: attach \(EPERM\)$
 ^KFAIL: gdb\.threads/non-ldr-exit\.exp: program exits normally \(PRMS: gdb/18717\)$
+^KFAIL: gdb\.threads/omp-par-scope\.exp: multi_scope: \w+ thread: print i\d\d \(PRMS: gdb/22214\)$
+^KFAIL: gdb\.threads/omp-par-scope\.exp: nested_\w+: [^:]+: \d\w\w (thread|stop): print \w \(PRMS: gdb/22214\)$
+^XFAIL: gdb\.threads/omp-par-scope\.exp: nested_\w+: [^:]+: \d\w\w (thread|stop): print \w$
+^KFAIL: gdb\.threads/process-dies-while-handling-bp\.exp: non_stop=on: cond_bp_target=\d+: inferior \d+ exited \(prompt\) \(PRMS: gdb/18749\)$
