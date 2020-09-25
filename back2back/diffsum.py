@@ -603,6 +603,10 @@ class SumfileTestcasePair(object):
         if self.b.num_passed > self.a.num_passed:
             return self.IMPROVED
 
+        # Less failures is *probably* an improvement??
+        if self.b.num_failed < self.a.num_failed:
+            return self.IMPROVED
+
         assert self.b.counts == self.a.counts
         return self.EQUIVALENT
 
