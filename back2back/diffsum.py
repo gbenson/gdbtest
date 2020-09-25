@@ -614,8 +614,8 @@ class SumfileTestcasePair(object):
     def delta(self):
         return difflib.unified_diff(self.a.lines,
                                     self.b.lines,
-                                    fromfile=self.a.filename,
-                                    tofile=self.b.filename)
+                                    fromfile=self.a.shortname,
+                                    tofile=self.b.shortname)
 
     @property
     def prettydelta(self):
