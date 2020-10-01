@@ -9,6 +9,7 @@ fi
 set -ex
 
 topdir=$HOME
+N=8
 
 cd $topdir
 outdir=$(date --iso-8601=date)
@@ -27,7 +28,7 @@ export RUNTESTFLAGS="CC_FOR_TARGET=$crowbar CXX_FOR_TARGET=$crowbar"
 cd build
 (CFLAGS="-g" \
  CXXFLAGS="-g" \
-   ../src/configure \
+   time ../src/configure \
      --with-system-readline \
      --with-separate-debug-dir=/usr/lib/debug \
      --with-gdb-datadir=$topdir/build/gdb/data-directory \
@@ -38,11 +39,13 @@ cd build
      --disable-intl \
      --disable-ld \
      --disable-sim \
-  && make $(rpmbuild --eval='%{?_smp_mflags}') \
+  && time make -j$N
 ) 2>&1 | tee $topdir/$outdir/build.log
+make -C gdb/testsuite site.exp
+sed -i 's,build/gdb/testsuite/\.\./\.\./\.\./,,' gdb/testsuite/site.exp
 cp -a . ../$outdir/with-clang
 
-make -k check \
+time make -C gdb/testsuite -k -j$N check-parallel \
   RUNTESTFLAGS="CC_FOR_TARGET=gcc CXX_FOR_TARGET=g++" \
   2>&1 | tee $topdir/$outdir/gcc-make-check.log
 for ext in sum log; do
@@ -55,7 +58,7 @@ mv build $outdir/with-gcc
 mv $outdir/with-clang build
 cd build
 
-make -k check \
+time make -C gdb/testsuite -k -j$N check-parallel \
   RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++" \
   2>&1 | tee $topdir/$outdir/clang-make-check.log
 for ext in sum log; do
