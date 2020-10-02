@@ -133,6 +133,22 @@ class SumfileTestcase(EquivalatableMixin):
         return (line.startswith(cls.RUNLINE_PREFIX)
                 and line.endswith(cls.RUNLINE_SUFFIX))
 
+    @classmethod
+    def _filename_from_runline(cls, runline):
+        assert cls.is_runline(runline)
+        return runline[len(cls.RUNLINE_PREFIX)
+                       :-len(cls.RUNLINE_SUFFIX)]
+
+    @classmethod
+    def _shortname_from_filename(cls, filename):
+        dirname, basename = os.path.split(filename)
+        return os.path.join(os.path.basename(dirname), basename)
+
+    @classmethod
+    def _shortname_from_runline(cls, runline):
+        return cls._shortname_from_filename(
+            cls._filename_from_runline(runline))
+
     def __init__(self, runline):
         assert self.is_runline(runline)
         self.lines = [runline]
@@ -145,13 +161,12 @@ class SumfileTestcase(EquivalatableMixin):
     @property
     def filename(self):
         """This testcase's filename, as recorded by DejaGnu."""
-        return self.lines[0][len(self.RUNLINE_PREFIX)
-                             :-len(self.RUNLINE_SUFFIX)]
+        return self._filename_from_runline(self.lines[0])
+
     @property
     def shortname(self):
         """This testcase's filename, relative to the testsuite."""
-        dirname, basename = os.path.split(self.filename)
-        return os.path.join(os.path.basename(dirname), basename)
+        return self._shortname_from_filename(self.filename)
 
     def _consume(self, line):
         m = self.RESULTLINE_RE.match(line)
@@ -451,6 +466,10 @@ class SumfileMatcher(object):
     def __init__(self, sumfile_a, sumfile_b):
         self._sfa = sumfile_a
         self._sfb = sumfile_b
+
+    @property
+    def sumfiles(self):
+        return self._sfa, self._sfb
 
     def __getitem__(self, key):
         a = self._sfa.get(key, None)
@@ -766,6 +785,38 @@ class GroupedBuildErrorsReport(Reporter):
                        % (index == 0 and "affects:" or " ",
                           testcase))
 
+class LogfileDeltaWriter(Reporter):
+    def write_deltas(self):
+        self._include = {}
+        for cat in self.categories:
+            if cat in (SumfileTestcasePair.REGRESSED,):
+                for pair in self.pairs_by_category[cat]:
+                    self._include[pair.shortname] = True
+        for cat in self.categories:
+            for pair in self.pairs_by_category[cat]:
+                for sumfile in pair._matcher.sumfiles:
+                    self._write_delta_for(sumfile)
+                return
+
+    def _write_delta_for(self, sumfile):
+        src_filename = os.path.splitext(sumfile.filename)[0] + ".log"
+        dst_filename = src_filename + "delta"
+        print("Writing %s..." % dst_filename, file=sys.stderr)
+        with open(dst_filename, "w") as fp:
+            testclass = sumfile._testclass
+            shortname = None
+            written = skipped = 0
+            for line in open(src_filename, "r").readlines():
+                if testclass.is_runline(line):
+                    shortname = testclass._shortname_from_runline(line)
+                if not self._include.get(shortname, False):
+                    skipped += 1
+                else:
+                    fp.write(line)
+                    written += 1
+            print("%8d lines written" % written, file=sys.stderr)
+            print("%8d lines skipped" % skipped, file=sys.stderr)
+
 def main():
     parser = argparse.ArgumentParser(
         usage="diffsum [OPTION]... FILE1 FILE2",
@@ -783,6 +834,10 @@ def main():
     parser.add_argument(
         "--report-errors", action="store_true",
         help="report build errors rather than the standard report")
+    parser.add_argument(
+        "--filter-logfiles", action="store_true",
+        help="write build logs with identical testcases removed")
+
     args = parser.parse_args()
     Reporter.verbosity = args.verbose
     a, b = map(Sumfile, args.filenames)
@@ -798,6 +853,10 @@ def main():
         if cat not in pairs_by_category:
             pairs_by_category[cat] = []
         pairs_by_category[cat].append(pair)
+
+    if args.filter_logfiles:
+        LogfileDeltaWriter(pairs_by_category).write_deltas()
+        return
 
     # Print some reports.
     if args.report_errors:
