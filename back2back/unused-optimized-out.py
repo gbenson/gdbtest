@@ -6,48 +6,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import glob
+import nmdiff
 import os
 import subprocess
 
 def is_elf(filename):
     return open(filename, "rb").read(4) == b"\177ELF"
-
-class Symbol(object):
-    def __init__(self, type, name, value=None):
-        assert len(type) == 1
-        self.type = type
-        self.name = name
-        self.value = value
-
-    @property
-    def type_and_name(self):
-        if self.name is None:
-            return self.type
-        else:
-            return " ".join((self.type, self.name))
-
-def _elf_symbols(filename):
-    cp = subprocess.run(["nm", filename],
-                        check=True,
-                        stdout=subprocess.PIPE,
-                        encoding="utf-8")
-    for line in cp.stdout.split("\n"):
-        if not line:
-            continue
-        try:
-            if line[0].isspace():
-                yield Symbol(*line.lstrip().split(None, 1))
-            else:
-                vtn = line.split(None, 2)
-                if len(vtn) == 2:
-                    vtn.append(None)
-                value, type, name = vtn
-                yield Symbol(type, name, value)
-        except ValueError as e:
-            raise ValueError("%s: %s" % (line, e))
-
-def elf_symbols(filename):
-    return list(_elf_symbols(filename))
 
 def main():
     for gcc_filename in sorted(glob.glob("/gdbtest/2020-10-02/with-gcc/"
@@ -85,8 +49,8 @@ def main():
                 if not is_elf(cfe_filename):
                     continue
                 try:
-                    gcc_symbols = elf_symbols(gcc_filename)
-                    cfe_symbols = elf_symbols(cfe_filename)
+                    gcc_symbols = nmdiff.elf_symbols(gcc_filename)
+                    cfe_symbols = nmdiff.elf_symbols(cfe_filename)
                 except subprocess.CalledProcessError:
                     continue
                 in_gcc = dict((sym.name, sym) for sym in gcc_symbols)
