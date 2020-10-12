@@ -5,6 +5,16 @@ if [ -z "$STY" ]; then
     echo 1>&2 " then: $0 2>&1 | tee build.log"
     exit 1
 fi
+clang=$(which clang 2>/dev/null)
+if [ -z "$clang" ]; then
+    echo 1>&2 "$(basename $0): clang: command not found."
+    exit 1
+fi
+if echo "$clang" | grep -q /usr; then
+    echo 1>&2 "$(basename $0): $clang: refusing to use system clang."
+    exit 1
+fi
+unset clang
 
 set -ex
 
