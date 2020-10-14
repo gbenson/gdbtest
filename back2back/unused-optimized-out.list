@@ -1,9 +1,4 @@
-gdb.base/list-ambiguous
-gdb.base/list
-gdb.base/msym-bp
-gdb.base/msym-lang
 gdb.base/ptype-offsets
-gdb.base/symtab-search-order
 gdb.compile/compile-cplus-anonymous
 gdb.compile/compile-cplus-inherit
 gdb.compile/compile-cplus-member
@@ -15,8 +10,8 @@ gdb.compile/compile-cplus
 gdb.compile/compile-setjmp
 gdb.compile/compile-tls
 gdb.compile/compile
+gdb.cp/anon-struct
 gdb.cp/bs15503
-gdb.cp/classes
 gdb.cp/converts
 gdb.cp/derivation
 gdb.cp/impl-this
@@ -27,15 +22,7 @@ gdb.cp/pass-by-ref
 gdb.cp/templates
 gdb.cp/virtbase2
 gdb.dwarf2/dw2-dir-file-name
-gdb.guile/scm-pretty-print
 gdb.linespec/cpcompletion
 gdb.mi/mi-sym-info
-gdb.multi/watchpoint-multi-exit
-gdb.python/py-as-string
 gdb.python/py-explore-cc
 gdb.python/py-finish-breakpoint2
-gdb.python/py-format-string
-gdb.python/py-objfile
-gdb.python/py-symbol
-gdb.python/py-symtab
-gdb.threads/omp-par-scope

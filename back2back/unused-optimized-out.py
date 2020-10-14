@@ -14,7 +14,7 @@ def is_elf(filename):
     return open(filename, "rb").read(4) == b"\177ELF"
 
 def main():
-    for gcc_filename in sorted(glob.glob("/gdbtest/2020-10-02/with-gcc/"
+    for gcc_filename in sorted(glob.glob("/gdbtest/2020-10-12/with-gcc/"
                                          + "gdb/testsuite/outputs/gdb.*"
                                          + "/*/gdb.sum")):
         # Only examine directories where Clang FAILed a test
