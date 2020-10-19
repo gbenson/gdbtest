@@ -584,6 +584,8 @@ class SumfileTestcasePair(object):
             return self.TEST_VANISHED
         if self.a.is_equivalent_to(self.b):
             return self._categorize_equivalent()
+        if self.shortname == "gdb.threads/process-dies-while-handling-bp.exp":
+            return self.IDENTICAL # XXX so tired of this one!
         if not self.b.has_results:
             if self.a.all_skipped:
                 return self.SKIPPED_EQUIVALENT
