@@ -870,6 +870,8 @@ def main():
     print()
     print(CountsReport(pairs_by_category))
     print()
+    if list(pairs_by_category.keys()) == [SumfileTestcasePair.IDENTICAL]:
+        return
     print(FilesByCategoryReport(pairs_by_category))
     print()
 
