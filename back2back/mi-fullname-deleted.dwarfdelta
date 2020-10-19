@@ -1,0 +1,90 @@
+--- /gdbtest/2020-10-19/with-gcc/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted/mi-fullname-deleted.dwarf	2020-10-19 17:05:27.449836206 +0100
++++ /gdbtest/2020-10-19/with-clang/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted/mi-fullname-deleted.dwarf	2020-10-19 17:05:27.453836123 +0100
+@@ -3,31 +3,29 @@
+ 
+ COMPILE_UNIT<header overall offset = 0x00000000>:
+ < 0><0x0000000b>  DW_TAG_compile_unit
+-                    DW_AT_producer              GNU C17 10.2.1 20200723 (Red Hat 10.2.1-1) -mtune=generic -march=x86-64 -g -fno-stack-protector
++                    DW_AT_producer              clang version 12.0.0 (https://github.com/llvm/llvm-project.git 45d785e22b2c940e6203eceda979e2b2bca57b29)
+                     DW_AT_language              DW_LANG_C99
+-                    DW_AT_name                  /gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted//mi-fullname-deleted.c
+-                    DW_AT_comp_dir              /gdbtest/build/gdb/testsuite
+-                    DW_AT_low_pc                0x00401106
+-                    DW_AT_high_pc               <offset-from-lowpc>11
++                    DW_AT_name                  /gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted/mi-fullname-deleted.c
+                     DW_AT_stmt_list             0x00000000
++                    DW_AT_comp_dir              /gdbtest/build/gdb/testsuite
++                    DW_AT_low_pc                0x00401110
++                    DW_AT_high_pc               <offset-from-lowpc>15
+ 
+ LOCAL_SYMBOLS:
+-< 1><0x0000002d>    DW_TAG_subprogram
+-                      DW_AT_external              yes(1)
++< 1><0x0000002a>    DW_TAG_subprogram
++                      DW_AT_low_pc                0x00401110
++                      DW_AT_high_pc               <offset-from-lowpc>15
++                      DW_AT_frame_base            len 0x0001: 56: DW_OP_reg6
+                       DW_AT_name                  main
+-                      DW_AT_decl_file             0x00000001 /gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted//mi-fullname-deleted.c
++                      DW_AT_decl_file             0x00000001 /gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted/mi-fullname-deleted.c
+                       DW_AT_decl_line             0x00000001
+-                      DW_AT_decl_column           0x00000005
+                       DW_AT_prototyped            yes(1)
+-                      DW_AT_type                  <0x0000004b>
+-                      DW_AT_low_pc                0x00401106
+-                      DW_AT_high_pc               <offset-from-lowpc>11
+-                      DW_AT_frame_base            len 0x0001: 9c: DW_OP_call_frame_cfa
+-                      DW_AT_GNU_all_call_sites    yes(1)
+-< 1><0x0000004b>    DW_TAG_base_type
+-                      DW_AT_byte_size             0x00000004
+-                      DW_AT_encoding              DW_ATE_signed
++                      DW_AT_type                  <0x00000043>
++                      DW_AT_external              yes(1)
++< 1><0x00000043>    DW_TAG_base_type
+                       DW_AT_name                  int
++                      DW_AT_encoding              DW_ATE_signed
++                      DW_AT_byte_size             0x00000004
+ 
+ .debug_line: line number info for a single cu
+ Source lines (from CU-DIE at .debug_info offset 0x0000000b):
+@@ -36,32 +34,18 @@
+             PE prologue end, EB epilogue begin
+             IS=val ISA number, DI=val discriminator value
+ <pc>        [lno,col] NS BB ET PE EB IS= DI= uri: "filepath"
+-0x00401106  [   1,17] NS uri: "/gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted//mi-fullname-deleted.c"
+-0x0040110a  [   1,26] NS
+-0x0040110f  [   1,29] NS
+-0x00401111  [   1,29] NS ET
++0x00401110  [   1, 0] NS uri: "/gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted/mi-fullname-deleted.c"
++0x0040111d  [   1,19] NS PE
++0x0040111f  [   1,19] NS ET
+ 
+ .debug_str
+-name at offset 0x00000000, length   28 is '/gdbtest/build/gdb/testsuite'
+-name at offset 0x0000001d, length   86 is '/gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted//mi-fullname-deleted.c'
+-name at offset 0x00000074, length   95 is 'GNU C17 10.2.1 20200723 (Red Hat 10.2.1-1) -mtune=generic -march=x86-64 -g -fno-stack-protector'
+-name at offset 0x000000d4, length    4 is 'main'
++name at offset 0x00000000, length  104 is 'clang version 12.0.0 (https://github.com/llvm/llvm-project.git 45d785e22b2c940e6203eceda979e2b2bca57b29)'
++name at offset 0x00000069, length   85 is '/gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted/mi-fullname-deleted.c'
++name at offset 0x000000bf, length   28 is '/gdbtest/build/gdb/testsuite'
++name at offset 0x000000dc, length    4 is 'main'
++name at offset 0x000000e1, length    3 is 'int'
+ 
+ .debug_aranges
+ 
+-COMPILE_UNIT<header overall offset = 0x00000000>:
+-< 0><0x0000000b>  DW_TAG_compile_unit
+-                    DW_AT_producer              GNU C17 10.2.1 20200723 (Red Hat 10.2.1-1) -mtune=generic -march=x86-64 -g -fno-stack-protector
+-                    DW_AT_language              DW_LANG_C99
+-                    DW_AT_name                  /gdbtest/build/gdb/testsuite/outputs/gdb.mi/mi-fullname-deleted//mi-fullname-deleted.c
+-                    DW_AT_comp_dir              /gdbtest/build/gdb/testsuite
+-                    DW_AT_low_pc                0x00401106
+-                    DW_AT_high_pc               <offset-from-lowpc>11
+-                    DW_AT_stmt_list             0x00000000
+-
+-
+-arange starts at 0x00401106, length of 0x0000000b, cu_die_offset = 0x0000000b
+-arange end
+-
+ .debug_frame
+ 
