@@ -8,3 +8,4 @@
 ^FAIL: gdb\.threads/fork-plus-threads\.exp: detach-on-fork=off: only inferior 1 left
 ^FAIL: gdb\.threads/gcore-stale-thread\.exp: save a corefile
 ^KFAIL: gdb\.threads/tls\.exp: print a_thread_local \(PRMS: gdb/25807\)
+^FAIL: gdb\.multi/multi-term-settings\.exp: inf1_how=attach: inf2_how=attach: stop with control-c \(SIGINT\)$
