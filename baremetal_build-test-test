@@ -42,6 +42,13 @@ if [ "$RUNTESTFLAGS" != "$expect_RUNTESTFLAGS" ]; then
 fi
 unset expect_RUNTESTFLAGS
 
+expect_DEJAGNU="$gdbtest_dir/site.exp"
+if [ "$DEJAGNU" != "$expect_DEJAGNU" ]; then
+    echo 1>&2 "$(basename $0): export DEJAGNU=$expect_DEJAGNU to continue."
+    exit 1
+fi
+unset expect_DEJAGNU
+
 set -ex
 
 topdir=$HOME
@@ -56,6 +63,7 @@ rpm -qa | sort > $topdir/$outdir/rpm-qa.sort
 
 [ -x $crowbar ]
 $crowbar && exit 1
+[ -d $(dirname $DEJAGNU)/boards ]
 
 cd build
 (CFLAGS="-g" \
