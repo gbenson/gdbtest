@@ -86,7 +86,7 @@ sed -i 's,build/gdb/testsuite/\.\./\.\./\.\./,,' gdb/testsuite/site.exp
 cp -a . ../$outdir/with-clang
 
 time make -C gdb/testsuite -k -j$N check-parallel \
-  RUNTESTFLAGS="CC_FOR_TARGET=gcc CXX_FOR_TARGET=g++" \
+  RUNTESTFLAGS="--target_board=gdbtest-with-gcc" \
   2>&1 | tee $topdir/$outdir/gcc-make-check.log
 for ext in sum log; do
   cp -a gdb/testsuite/gdb.$ext \
@@ -99,7 +99,7 @@ mv $outdir/with-clang build
 cd build
 
 time make -C gdb/testsuite -k -j$N check-parallel \
-  RUNTESTFLAGS="CC_FOR_TARGET=clang CXX_FOR_TARGET=clang++" \
+  RUNTESTFLAGS="--target_board=gdbtest-with-clang" \
   2>&1 | tee $topdir/$outdir/clang-make-check.log
 for ext in sum log; do
   cp -a gdb/testsuite/gdb.$ext \

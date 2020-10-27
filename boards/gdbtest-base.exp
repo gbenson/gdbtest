@@ -1,0 +1,27 @@
+if {![info exists board] || ![string match gdbtest-with-* $board]} {
+    send_error "ERROR: Don't use --target_board=gdbtest-base directly\n"
+    exit 1
+}
+
+# GDB's unix.exp sets a really long timeout, to handle running tests
+# over NFS, but I don't thing we need that.
+global timeout
+if [info exists timeout] {
+    set saved_timeout $timeout
+}
+
+# Mirror what happens with --target-board=unix (i.e. the default).
+load_board_description "unix"
+load_tool_target_config "unix"
+
+# Did GDB's unix.exp set a really long timeout?  Undo that...
+if {[info exists saved_timeout] && $timeout > $saved_timeout} {
+    set timeout $saved_timeout
+    unset saved_timeout
+    verbose "Timeout is now $timeout seconds again" 2
+}
+
+# Skip testing any non-core language.
+foreach lang {ada fortran go d rust} {
+    eval "proc skip_${lang}_tests {} { return 1 }"
+}

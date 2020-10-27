@@ -1,0 +1,6 @@
+# This file is a DejaGnu board file. To use it:
+# bash$ cd ${build_dir}/gdb
+# bash$ make check RUNTESTFLAGS="--target_board=gdbtest-with-clang"
+
+load_board_description "gdbtest-base"
+load_board_description "use-clang"

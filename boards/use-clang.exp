@@ -1,0 +1,7 @@
+if {![info exists board] || ![string match gdbtest-with-* $board]} {
+    send_error "ERROR: Don't use --target_board=clang-base directly\n"
+    exit 1
+}
+
+set CC_FOR_TARGET clang
+set CXX_FOR_TARGET clang++
