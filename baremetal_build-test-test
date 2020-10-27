@@ -61,7 +61,9 @@ cd build
   && time make -j$N
 ) 2>&1 | tee $topdir/$outdir/build.log
 make -C gdb/testsuite site.exp
-sed -i 's,build/gdb/testsuite/\.\./\.\./\.\./,,' gdb/testsuite/site.exp
+(echo "set gbenson_gdbtestdir ${gdbtest_dir}";
+ echo "source \${gbenson_gdbtestdir}/$(basename $0).exp") \
+    >> gdb/testsuite/site.exp
 cp -a . ../$outdir/with-clang
 
 time make -C gdb/testsuite -k -j$N check-parallel \
