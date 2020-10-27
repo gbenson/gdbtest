@@ -16,6 +16,15 @@ if echo "$clang" | grep -q /usr; then
 fi
 unset clang
 
+unset gdbtest_dir
+if [ $0 = "$(dirname $0)/$(basename $0)" ]; then
+    gdbtest_dir=$(cd $(dirname $0) && pwd)
+fi
+if [ -z "$gdbtest_dir" ]; then
+    echo 1>&2 "$(basename $0): unable to locate self."
+    exit 1
+fi
+
 set -ex
 
 topdir=$HOME
@@ -30,7 +39,7 @@ rpm -qa | sort > $topdir/$outdir/rpm-qa.sort
 
 unset CC_FOR_TARGET
 unset CX_FOR_TARGET
-crowbar="$topdir/gdbtest/crowbar"
+crowbar="$gdbtest_dir/crowbar"
 [ -x $crowbar ]
 $crowbar && exit 1
 export RUNTESTFLAGS="CC_FOR_TARGET=$crowbar CXX_FOR_TARGET=$crowbar"
@@ -60,7 +69,7 @@ time make -C gdb/testsuite -k -j$N check-parallel \
   2>&1 | tee $topdir/$outdir/gcc-make-check.log
 for ext in sum log; do
   cp -a gdb/testsuite/gdb.$ext \
-    $topdir/gdbtest/back2back/baremetal-gcc-$logfile.$ext
+    $gdbtest_dir/back2back/baremetal-gcc-$logfile.$ext
 done
 
 cd ..
@@ -73,7 +82,7 @@ time make -C gdb/testsuite -k -j$N check-parallel \
   2>&1 | tee $topdir/$outdir/clang-make-check.log
 for ext in sum log; do
   cp -a gdb/testsuite/gdb.$ext \
-    $topdir/gdbtest/back2back/baremetal-clang-$logfile.$ext
+    $gdbtest_dir/back2back/baremetal-clang-$logfile.$ext
 done
 
 cp -a . ../$outdir/with-clang
