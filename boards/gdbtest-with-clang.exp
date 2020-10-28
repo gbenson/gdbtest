@@ -3,4 +3,6 @@
 # bash$ make check RUNTESTFLAGS="--target_board=gdbtest-with-clang"
 
 load_board_description "gdbtest-base"
-load_board_description "use-clang"
+
+set CC_FOR_TARGET clang
+set CXX_FOR_TARGET clang++
