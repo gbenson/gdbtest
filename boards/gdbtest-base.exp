@@ -10,9 +10,10 @@ if [info exists timeout] {
     set saved_timeout $timeout
 }
 
-# Mirror what happens with --target-board=unix (i.e. the default).
-load_board_description "unix"
-load_tool_target_config "unix"
+# Inherit from --target-board=unix (the default), but use GDB's
+# local-board.exp to stop everything suddenly appearing remote.
+load_base_board_description "unix"
+load_board_description "local-board"
 
 # Did GDB's unix.exp set a really long timeout?  Undo that...
 if {[info exists saved_timeout] && $timeout > $saved_timeout} {
