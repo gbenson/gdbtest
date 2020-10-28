@@ -3,4 +3,6 @@
 # bash$ make check RUNTESTFLAGS="--target_board=gdbtest-with-gcc"
 
 load_board_description "gdbtest-base"
-load_board_description "use-gcc"
+
+set CC_FOR_TARGET gcc
+set CXX_FOR_TARGET g++
