@@ -1,0 +1,40 @@
+# This file is a DejaGnu board file. To use it:
+# bash$ cd ${build_dir}/gdb
+# bash$ make check RUNTESTFLAGS="--target_board=gdbtest/gcc"
+
+array set GDBTEST_VARIANTS {
+    clang {
+	CC {clang}
+	CXX {clang++}
+    }
+    gcc {
+	CC {gcc}
+	CXX {g++}
+    }
+}
+
+global board_variant_list
+
+# Pop the gdbtest variant to use from $board_variant_list.
+set variant_name [lindex $board_variant_list 0]
+if [catch {array set variant_info $GDBTEST_VARIANTS($variant_name)}] {
+    send_error "ERROR: Use --target_board=gdbtest/COMPILER,\
+	where COMPILER is [join [array names GDBTEST_VARIANTS] { or }].\n"
+    exit 1
+}
+set board_variant_list [lreplace $board_variant_list 0 0]
+
+# Inherit from unix.exp, but use GDB's local board to stop
+# things defaulting to remote.
+load_base_board_description "unix"
+load_board_description "local-board"
+
+# Set the variant's flags.
+foreach flag [array names variant_info] {
+    eval set ${flag}_FOR_TARGET $variant_info($flag)
+}
+
+# Inhibit testing any non-core language.
+foreach lang {ada fortran go d rust} {
+    eval "proc skip_${lang}_tests {} { return 1 }"
+}
