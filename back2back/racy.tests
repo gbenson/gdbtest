@@ -3,7 +3,7 @@
 ^KFAIL: gdb\.threads/omp-par-scope\.exp: multi_scope: \w+ thread: print i\d\d \(PRMS: gdb/22214\)$
 ^KFAIL: gdb\.threads/omp-par-scope\.exp: nested_\w+: [^:]+: \d\w\w (thread|stop): print \w \(PRMS: gdb/22214\)$
 ^XFAIL: gdb\.threads/omp-par-scope\.exp: nested_\w+: [^:]+: \d\w\w (thread|stop): print \w$
-^KFAIL: gdb\.threads/process-dies-while-handling-bp\.exp: non_stop=o[nf]f?: cond_bp_target=\d+: inferior \d+ exited \(prompt\) \(PRMS: gdb/18749\)$
+^KFAIL: gdb\.threads/process-dies-while-handling-bp\.exp: non_stop=o[nf]f?: cond_bp_target=\d+: inferior \d+ exited \((prompt|memory error)\) \(PRMS: gdb/18749\)$
 ^FAIL: gdb\.threads/fork-plus-threads\.exp: detach-on-fork=off: no threads left
 ^FAIL: gdb\.threads/fork-plus-threads\.exp: detach-on-fork=off: only inferior 1 left
 ^FAIL: gdb\.threads/gcore-stale-thread\.exp: save a corefile
