@@ -199,6 +199,14 @@ class SumfileTestcase(EquivalatableMixin):
         self.lines[index:len(self.lines)] = []
         return result
 
+    def _normalize_with(self, other):
+        if other is None:
+            return
+        if len(self.results) != len(other.results):
+            return
+        for a, b in zip(self.results, other.results):
+            a._normalize_with(b)
+
     def _replace_result(self, orig, repl):
         self.results[self.results.index(orig)] = repl
         self._reset_counts()
@@ -403,17 +411,18 @@ class SumfileTestcaseResult(EquivalatableMixin):
             return True
         if self == other:
             return False
+        return True  # XXX for now...
+
+    def _normalize_with(self, other):
         if self.is_failure_of(other):
             passer, failer = other, self
         elif other.is_failure_of(self):
             passer, failer = self, other
         else:
-            return True
+            return
         if self.is_racy_failure(failer, passer):
             # XXX: hack: this mutates the failer's testcase.
             failer.testcase._replace_result(failer, passer)
-            return False
-        return True
 
     def is_failure_of(self, other):
         """Returns True if self is the FAILure to other's PASS."""
@@ -582,8 +591,11 @@ class SumfileTestcasePair(object):
             return self.TEST_APPEARED
         if self.b is None:
             return self.TEST_VANISHED
+        self.a._normalize_with(self.b)
+        if self.a.results == self.b.results:
+            return self.IDENTICAL
         if self.a.is_equivalent_to(self.b):
-            return self._categorize_equivalent()
+            return self.EQUIVALENT # XXX for now
         if self.shortname == "gdb.threads/process-dies-while-handling-bp.exp":
             return self.IDENTICAL # XXX so tired of this one!
         if not self.b.has_results:
@@ -595,11 +607,6 @@ class SumfileTestcasePair(object):
                 return self.SKIPPED_EQUIVALENT
             return self.TEST_SKIPPED
         return self._categorize_nonequivalent()
-
-    def _categorize_equivalent(self):
-        if self.a.results == self.b.results:
-            return self.IDENTICAL
-        return self.EQUIVALENT
 
     def _categorize_nonequivalent(self):
         # Less passes is unambiguously a regression.
