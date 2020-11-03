@@ -372,11 +372,11 @@ class SumfileTestcaseResult(EquivalatableMixin):
     The raw status can be *PASS, *FAIL, or UN*.
     The cooked status will be one of PASS, FAIL or SKIP.
     """
-    def __init__(self, testcase, rel_lineno, raw_status, message):
+    def __init__(self, testcase, rel_lineno, raw_status, raw_message):
         self.testcase = testcase
         self.rel_lineno = rel_lineno
         self.raw_status = raw_status
-        self.message = message
+        self.raw_message = raw_message
 
     @property
     def testname(self):
@@ -394,8 +394,12 @@ class SumfileTestcaseResult(EquivalatableMixin):
         return result
 
     @property
+    def message(self):
+        return self.raw_message
+
+    @property
     def as_tuple(self):
-        return self.raw_status, self.testname, self.message
+        return self.raw_status, self.testname, self.raw_message
 
     def __str__(self):
         return ": ".join(self.as_tuple)
@@ -434,7 +438,7 @@ class SumfileTestcaseResult(EquivalatableMixin):
                 or self.testname != other.testname
                 or self.status != "FAIL"
                 or other.status != "PASS"
-                or not self.message.startswith(other.message))
+                or not self.raw_message.startswith(other.raw_message))
 
     RACYFAIL_REGEXPS_FILENAME = "racy.tests"
     RACYFAIL_REGEXPS = None
