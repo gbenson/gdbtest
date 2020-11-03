@@ -405,6 +405,10 @@ class SumfileTestcaseResult(EquivalatableMixin):
             result = result[:-len(m.group(0))]
         # Replace hex constants.
         result = self.OH_X_HEX_RE.sub("HEXHEXHEX", result)
+        # Hack gdb.base/call-sc.exp.
+        if self.testname == "gdb.base/call-sc.exp":
+            if result == "ptype foo; call-sc-ts short int":
+                result = result[:-4]
         return result
 
     @property
