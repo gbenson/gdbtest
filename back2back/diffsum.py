@@ -393,9 +393,19 @@ class SumfileTestcaseResult(EquivalatableMixin):
             raise ValueError(self.raw_status)
         return result
 
+    EXTRA_INFO_RE = re.compile(r"\s+\([^)]+\)$")
+    OH_X_HEX_RE = re.compile(r"(?<=0x)[0-9a-f]+")
+
     @property
     def message(self):
-        return self.raw_message
+        result = self.raw_message
+        # Strip extra information.
+        m = self.EXTRA_INFO_RE.search(result)
+        if m is not None:
+            result = result[:-len(m.group(0))]
+        # Replace hex constants.
+        result = self.OH_X_HEX_RE.sub("HEXHEXHEX", result)
+        return result
 
     @property
     def as_tuple(self):
@@ -415,7 +425,13 @@ class SumfileTestcaseResult(EquivalatableMixin):
             return True
         if self == other:
             return False
-        return True  # XXX for now...
+        if self.raw_status != other.raw_status:
+            return True
+        if self.testname != other.testname:
+            return True
+        if self.message != other.message:
+            return True
+        return False
 
     def _normalize_with(self, other):
         if self.is_failure_of(other):
@@ -599,7 +615,7 @@ class SumfileTestcasePair(object):
         if self.a.results == self.b.results:
             return self.IDENTICAL
         if self.a.is_equivalent_to(self.b):
-            return self.EQUIVALENT # XXX for now
+            return self.IDENTICAL
         if self.shortname == "gdb.threads/process-dies-while-handling-bp.exp":
             return self.IDENTICAL # XXX so tired of this one!
         if not self.b.has_results:
