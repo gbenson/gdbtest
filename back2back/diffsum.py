@@ -719,6 +719,12 @@ class Reporter(object):
         return "\n".join(self.report_lines)
 
     @property
+    def pairs(self):
+        for cat, pairs in self.pairs_by_category.items():
+            for pair in pairs:
+                yield pair
+
+    @property
     def categories(self):
         for pri, cat in sorted(((cat.priority, cat)
                                 for cat in self.pairs_by_category.keys()),
@@ -736,6 +742,12 @@ class CountsReport(Reporter):
             yield "%20s %4d %5.1f%%" % (cat, count, 100*count/total)
         yield "  " + "=" * 32
         yield "%20s %4d %5.1f%%" % ("TOTAL", total, 100)
+
+class AllFilesReport(Reporter):
+    @property
+    def report_lines(self):
+        for name, pair in sorted((p.shortname, p) for p in self.pairs):
+            yield "%s: %s" % (pair.category, name)
 
 class FilesByCategoryReport(Reporter):
     @property
@@ -870,6 +882,9 @@ def main():
     parser.add_argument(
         "--filter-logfiles", action="store_true",
         help="write build logs with identical testcases removed")
+    parser.add_argument(
+        "--all", action="store_true",
+        help="list all test results, ")
 
     args = parser.parse_args()
     Reporter.verbosity = args.verbose
@@ -903,8 +918,11 @@ def main():
     print()
     if list(pairs_by_category.keys()) == [SumfileTestcasePair.IDENTICAL]:
         return
-    print(FilesByCategoryReport(pairs_by_category))
-    print()
+    if args.all:
+        print(AllFilesReport(pairs_by_category))
+    else:
+        print(FilesByCategoryReport(pairs_by_category))
+        print()
 
 if __name__ == "__main__":
     if "sys" not in locals():
