@@ -1,3 +1,5 @@
+GB1002 = <20201002164926.GA17343@blade.nx> Fri, 2 Oct 2020 17:49:26 +0100
+
  REGRESSED:
    gdb.arch/disp-step-insn-reloc.exp
    gdb.arch/i386-avx.exp
@@ -69,6 +71,11 @@
    gdb.cp/pass-by-ref.exp
    gdb.cp/ptype-flags.exp
    gdb.cp/templates.exp
+     [GB1002] a) Fails b/c GDB reports filenames differently w/Clang-compiled
+     [GB1002] XXX multiple tests fail this way
+     [GB1002] b) Fails b/c odd type-printing differences (whitespace?!)
+     [PA????]    (types verbatim from strings in debuginfo?
+
    gdb.cp/virtbase2.exp
    gdb.dwarf2/dw2-abs-hi-pc.exp
    gdb.dwarf2/dw2-case-insensitive.exp
@@ -79,6 +86,8 @@
    gdb.dwarf2/dw2-noloc.exp
    gdb.dwarf2/dw2-param-error.exp
    gdb.dwarf2/dw2-ref-missing-frame.exp
+     [GB1002] testcase produces manual DWARF, which doesn't work?
+
    gdb.dwarf2/dw2-skip-prologue.exp
    gdb.dwarf2/dw2-unresolved.exp
 -  gdb.fortran/module.exp
@@ -93,16 +102,30 @@
 -  gdb.linespec/skip-two.exp
    gdb.mi/dw2-ref-missing-frame.exp
    gdb.mi/mi-catch-cpp-exceptions.exp
+     [GB1002] Fails almost every testcase b/c line numbers off-by-one
+
    gdb.mi/mi-dprintf.exp
+     [GB1002] &"'stderr' has unknown type; cast it to its declared type\n"
+     [GB1002] Interpretation of types?
+
 -  gdb.mi/mi-file.exp
 -  gdb.mi/mi-fortran-modules.exp
 -  gdb.mi/mi-fullname-deleted.exp
    gdb.mi/mi-sym-info.exp
+     [GB1002] GDB couldn't find symbols or locals?
+
 -  gdb.mi/mi-var-child-f.exp
+-    [GB1002] GDB couldn't find symbols or locals?
+
    gdb.mi/mi-var-cp.exp
 -  gdb.mi/mi-vla-fortran.exp
+-    [GB1002] type printing?
+-    [GBNOV?] fortran compiler detection
+
    gdb.mi/mi-watch.exp
    gdb.mi/user-selected-context-sync.exp
+     [GB1002] GDB couldn't find symbols or locals?
+
 -  gdb.multi/watchpoint-multi-exit.exp
    gdb.opt/clobbered-registers-O2.exp
 -  gdb.python/py-as-string.exp
