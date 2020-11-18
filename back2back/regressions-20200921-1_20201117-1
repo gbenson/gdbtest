@@ -1,8 +1,30 @@
 GB1002 = <20201002164926.GA17343@blade.nx> Fri, 2 Oct 2020 17:49:26 +0100
+PA1002 = <b4eff009-9c1d-7c1b-d7f9-8b5a663741c0@redhat.com> \
+         Fri, 2 Oct 2020 19:59:26 +0100
+
+[PA1002] One of the main patterns I'm seeing is that GDB is failing to
+[PA1002] find symbols in the program.  It explains a good number of
+[PA1002] failures.
+[PA1002]
+[PA1002] Another pattern is line info is probably different or broken
+[PA1002] with Clang.  GDB sometimes can't find a line in the program.
+[PA1002] Might be related to the issue discovered right before GDB 10
+[PA1002] was branched, about Clang emitting "line 0" for some
+[PA1002] instructions.  This seems to explain the gdb.reverse/
+[PA1002] +breakage, instead of odd instructions.
+[PA1002]
+[PA1002] I think we should tackle these two issues first -- "missing
+[PA1002] symbols", and "bad line info".  Say, pick a couple
+[PA1002] representative testcases for each of the problems and
+[PA1002] focus on those.  You already picked out
+[PA1002] gdb.mi/mi-catch-cpp-exceptions.exp, which seems to be about the line
+[PA1002] info, so start with that one.
+
 
  REGRESSED:
    gdb.arch/disp-step-insn-reloc.exp
    gdb.arch/i386-avx.exp
+     [PA1002] SIGSEGV... hmm, really strange, and bad
 -  gdb.base/annota1.exp
 +  gdb.base/attach.exp
    gdb.base/break-caller-line.exp
@@ -11,40 +33,97 @@ GB1002 = <20201002164926.GA17343@blade.nx> Fri, 2 Oct 2020 17:49:26 +0100
    gdb.base/consecutive.exp
 +  gdb.base/coredump-filter-build-id.exp
    gdb.base/dprintf.exp
+     [PA1002] this may be a testcase bug for assuming debug info.
+     [GB1118] c.f. gdb.mi/mi-dprintf.exp (same issue?)
+
    gdb.base/endianity.exp
    gdb.base/foll-exec.exp
+     [PA1002] probably something to do with line info.
+
    gdb.base/info-program.exp
    gdb.base/info-types-c++.exp
 -  gdb.base/list-ambiguous.exp
+-    [PA1002] maybe clang optimized out the variable?
+-
 -  gdb.base/list.exp
+-    [PA1002] maybe clang optimized out the function?
+-    [PA1002] Or maybe this is a case of bad debug info.
+
    gdb.base/macscp.exp
    gdb.base/maint.exp
+     [PA1002] sounds like missing symbols.
+
 -  gdb.base/msym-lang.exp
+-    [PA1002] didn't find the minsym?  was it emitted?
+-    [GB1118] fixed by commit 557fc25 luis.machado@linaro.org Oct 14?
+
 +  gdb.base/msym-bp-shl.exp
+     [GB1118] caused by commit 557fc25 luis.machado@linaro.org Oct 14??
+     [GB1118] c.f. gdb.base/msym-lang.exp, which failed in 20200921
+     [GB1118] not in 20201117 (because Luis's commit fixed it?)
+
    gdb.base/nodebug.exp
 -  gdb.base/print-file-var.exp
    gdb.base/ptype-offsets.exp
+     [PA1002] clang is supposed to be ABI compatible, what changes
+     [PA1002] here compared to GCC?
+
 +  gdb.base/sepdebug.exp
    gdb.base/setvar.exp
 -  gdb.base/share-env-with-gdbserver.exp
+-    [PA1002] Again with the missing symbols.
+
    gdb.base/shlib-call.exp
    gdb.base/skip-inline.exp
+     [PA1002] inline debug info issues?
+
    gdb.base/skip-solib.exp
+     [PA1002] stepped out of main?
+
    gdb.base/skip.exp
+     [PA1002] Maybe line info related.
+
    gdb.base/so-impl-ld.exp
+     [PA1002] Maybe a simple testcase issue?
+
 -  gdb.base/step-test.exp
+-    [PA1002] bad debug or line info?
+
    gdb.base/style.exp
+     [PA1002] Bad macro info?
+
    gdb.base/symbol-alias.exp
+     [GB1118] g_var_s_alias has unknown type; cast it to its declared type
+
 -  gdb.base/symtab-search-order.exp
+-    [PA1002] odd, why is clang different here?
+
    gdb.base/vla-optimized-out.exp
+     [PA1002] Sounds like -flto optimized out the function.
+     [GB1118] -flto wtf?
+     [GB1118] PR gdb/26905
+
    gdb.base/vla-ptr.exp
+     [GB1118] PR gdb/26905
+
    gdb.base/watchpoint.exp
+     [PA1002] line info?
+
    gdb.btrace/delta.exp
    gdb.btrace/exception.exp
    gdb.btrace/function_call_history.exp
    gdb.btrace/rn-dl-bind.exp
+     [PA1002] No idea.  I'd ignore gdb.btrace/ testcases for now.
+
    gdb.compile/compile-cplus-anonymous.exp
+     [PA1002] Again with the missing symbols.
+     [PA1002] Program received signal SIGSEGV
+     [PA1002] Not good...
+
    gdb.compile/compile-cplus-inherit.exp
+     [PA1002] cc1plus: fatal error: libcp1plugin: handshake failed
+     [PA1002] Seeing the same error in many gdb.compile/ testcases.
+
    gdb.compile/compile-cplus-member.exp
    gdb.compile/compile-cplus-method.exp
    gdb.compile/compile-cplus-namespace.exp
@@ -55,35 +134,71 @@ GB1002 = <20201002164926.GA17343@blade.nx> Fri, 2 Oct 2020 17:49:26 +0100
    gdb.compile/compile-setjmp.exp
    gdb.compile/compile-tls.exp
    gdb.compile/compile.exp
+     [PA1002] Skipping the rest of the gdb.compile/ tests.
+
    gdb.cp/align.exp
    gdb.cp/anon-struct.exp
    gdb.cp/bs15503.exp
+     [PA1002] Couldn't find method std::string::length
+     [PA1002] maybe it was not emitted even at -O0?
+     [GB1118] if so it's low-hanging fruit
+
 -  gdb.cp/classes.exp
 +  gdb.cp/call-method-register.exp
    gdb.cp/converts.exp
+     [PA1002] function not emitted?
+
    gdb.cp/derivation.exp
    gdb.cp/impl-this.exp
    gdb.cp/koenig.exp
    gdb.cp/m-static.exp
+     [PA1002] FAIL: simple object instance, print destructor
+     [PA1002] May be just a matter of adjusting testcase.
+     [GB1118] low-hanging fruit?
+
    gdb.cp/mb-ctor.exp
    gdb.cp/nsusing.exp
    gdb.cp/pass-by-ref-2.exp
    gdb.cp/pass-by-ref.exp
+     [PA1002] It's XFAILed but it looks suspiciously like other cases
+     [PA1002] of missing symbols.  Should look into what this XFAIL
+     [PA1002] was about.
+     [GB1118] maybe low-hanging fruit??
+
    gdb.cp/ptype-flags.exp
+     [PA1002] typedefs in the wrong spot.
+
    gdb.cp/templates.exp
      [GB1002] a) Fails b/c GDB reports filenames differently w/Clang-compiled
      [GB1002] XXX multiple tests fail this way
+     [PA1002]    Sounds like maybe Clang doesn't output DW_AT_comp_dir?
      [GB1002] b) Fails b/c odd type-printing differences (whitespace?!)
-     [PA????]    (types verbatim from strings in debuginfo?
+     [PA1002]    I think these template instantiation names are
+     [PA1002]    emitted verbatim by the compilers into the debug info.
+     [PA1002]    So the different compilers generate them differently.
+     [PA1002]    There was a discussion about this upstream some months ago.
+     [PA1002] c) Again typedefs?
 
    gdb.cp/virtbase2.exp
    gdb.dwarf2/dw2-abs-hi-pc.exp
+     [PA1002] missing minimal symbol?
+
    gdb.dwarf2/dw2-case-insensitive.exp
+     [PA1002] missing minimal symbol?
+
    gdb.dwarf2/dw2-cp-infcall-ref-static.exp
+     [PA1002] 'f' has unknown return type; cast the call to its
+     [PA1002] declared return type
+     [PA1002] The testcase writes its own debug info, why can't GDB find it?
+     [GB1118] start here for these 'unknown type; cast the X' errors?
+
    gdb.dwarf2/dw2-dir-file-name.exp
    gdb.dwarf2/dw2-entry-value.exp
    gdb.dwarf2/dw2-inline-param.exp
    gdb.dwarf2/dw2-noloc.exp
+     [PA1002] 'main_local_locaddr_resolvable' has unknown type; cast
+     [PA1002]  it to its declared type
+
    gdb.dwarf2/dw2-param-error.exp
    gdb.dwarf2/dw2-ref-missing-frame.exp
      [GB1002] testcase produces manual DWARF, which doesn't work?
@@ -97,6 +212,11 @@ GB1002 = <20201002164926.GA17343@blade.nx> Fri, 2 Oct 2020 17:49:26 +0100
 -  gdb.guile/scm-pretty-print.exp
    gdb.guile/scm-symtab.exp
    gdb.linespec/cp-completion-aliases.exp
+     [PA1002] missing symbols?
+     [GB1118] also
+     [PA1002] GDB has code to merge the function symbols if they only
+     [PA1002] differ because of typedefs.  That's not working here?
+
    gdb.linespec/cpcompletion.exp
    gdb.linespec/macro-relative.exp
 -  gdb.linespec/skip-two.exp
@@ -105,38 +225,68 @@ GB1002 = <20201002164926.GA17343@blade.nx> Fri, 2 Oct 2020 17:49:26 +0100
      [GB1002] Fails almost every testcase b/c line numbers off-by-one
 
    gdb.mi/mi-dprintf.exp
-     [GB1002] &"'stderr' has unknown type; cast it to its declared type\n"
+     [GB1002] "stderr has unknown type; cast it to its declared type"
      [GB1002] Interpretation of types?
+     [GB1118] c.f. gdb.base/dprintf.exp (same issue?)
 
 -  gdb.mi/mi-file.exp
+-    [PA1002] Maybe bad line info?  Just guessing.
+
 -  gdb.mi/mi-fortran-modules.exp
 -  gdb.mi/mi-fullname-deleted.exp
+-    [PA1002] Maybe bad line info?  Just guessing.
+
    gdb.mi/mi-sym-info.exp
      [GB1002] GDB couldn't find symbols or locals?
+     [PA1002] Missing symbols
 
 -  gdb.mi/mi-var-child-f.exp
 -    [GB1002] GDB couldn't find symbols or locals?
 
    gdb.mi/mi-var-cp.exp
+     [PA1002] Probably missing symbols again
+
 -  gdb.mi/mi-vla-fortran.exp
 -    [GB1002] type printing?
--    [GBNOV?] fortran compiler detection
+-    [PA1002] I'm not even sure how that turned out different,
+-    [PA1002] was clang really involved here?
+-    [GBNOV?] it's the fortran compiler detection thing
 
    gdb.mi/mi-watch.exp
+     [PA1002] I'd guess just different line info.
+
    gdb.mi/user-selected-context-sync.exp
      [GB1002] GDB couldn't find symbols or locals?
+     [PA1002] I suspect it's line info related
+     [PA1002] Maybe just different line info?
 
 -  gdb.multi/watchpoint-multi-exit.exp
+-    [PA1002] Yet another case of missing symbol?
+
    gdb.opt/clobbered-registers-O2.exp
+     [GB1118] Program received signal SIGSEGV, Segmentation fault.
+
 -  gdb.python/py-as-string.exp
+-    [PA1002] Yet again missing symbols?
+
    gdb.python/py-explore-cc.exp
+     [PA1002] Different line info?
+
    gdb.python/py-finish-breakpoint2.exp
 -  gdb.python/py-format-string.exp
    gdb.python/py-objfile.exp
+     [PA1002] more missing symbols / types.
+
 -  gdb.python/py-symbol.exp
    gdb.python/py-symtab.exp
    gdb.python/python.exp
+
    gdb.reverse/break-precsave.exp
+     [PA1002] Again with bad/different line info.
+     [PA1002] Looks like most of the failures under gdb.reverse/
+     [PA1002] look like that one.  Skipping the rest of the
+     [PA1002] gdb.reverse/ fails.
+
    gdb.reverse/break-reverse.exp
    gdb.reverse/consecutive-precsave.exp
    gdb.reverse/consecutive-reverse.exp
@@ -147,7 +297,14 @@ GB1002 = <20201002164926.GA17343@blade.nx> Fri, 2 Oct 2020 17:49:26 +0100
    gdb.reverse/step-precsave.exp
    gdb.reverse/step-reverse.exp
    gdb.reverse/watch-precsave.exp
+     [PA1002] lets focus on other testcases first, ignoring reverse stuff.
+     [PA1002] I did notice that several gdb.reverse/ testcases fail
+     [PA1002] with more of the same line info issues, though, e.g.
+     [PA1002] FAIL: gdb.reverse/break-precsave.exp: BP at end of main
+
 +  gdb.server/solib-list.exp
    gdb.stabs/gdb11479.exp
 -  gdb.threads/omp-par-scope.exp
+-    [PA1002] missing symbols
+
 -  gdb.threads/tls-so_extern.exp
