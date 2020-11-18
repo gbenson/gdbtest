@@ -33,7 +33,7 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
    gdb.arch/disp-step-insn-reloc.exp
    gdb.arch/i386-avx.exp
      [PA1002] SIGSEGV... hmm, really strange, and bad
--  gdb.base/annota1.exp
+
 +  gdb.base/attach.exp
      [PA1015] Fedora/RHEL gcc output build ids by default
      [PA1015] upstream GCC does not
@@ -56,20 +56,9 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
 
    gdb.base/info-program.exp
    gdb.base/info-types-c++.exp
--  gdb.base/list-ambiguous.exp
--    [PA1002] maybe clang optimized out the variable?
--
--  gdb.base/list.exp
--    [PA1002] maybe clang optimized out the function?
--    [PA1002] Or maybe this is a case of bad debug info.
-
    gdb.base/macscp.exp
    gdb.base/maint.exp
      [PA1002] sounds like missing symbols.
-
--  gdb.base/msym-lang.exp
--    [PA1002] didn't find the minsym?  was it emitted?
--    [GB1118] fixed by commit 557fc25 luis.machado@linaro.org Oct 14?
 
 +  gdb.base/msym-bp-shl.exp
      [GB1118] caused by commit 557fc25 luis.machado@linaro.org Oct 14??
@@ -77,15 +66,12 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
      [GB1118] not in 20201117 (because Luis's commit fixed it?)
 
    gdb.base/nodebug.exp
--  gdb.base/print-file-var.exp
    gdb.base/ptype-offsets.exp
      [PA1002] clang is supposed to be ABI compatible, what changes
      [PA1002] here compared to GCC?
 
 +  gdb.base/sepdebug.exp
    gdb.base/setvar.exp
--  gdb.base/share-env-with-gdbserver.exp
--    [PA1002] Again with the missing symbols.
 
    gdb.base/shlib-call.exp
    gdb.base/skip-inline.exp
@@ -100,17 +86,11 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
    gdb.base/so-impl-ld.exp
      [PA1002] Maybe a simple testcase issue?
 
--  gdb.base/step-test.exp
--    [PA1002] bad debug or line info?
-
    gdb.base/style.exp
      [PA1002] Bad macro info?
 
    gdb.base/symbol-alias.exp
      [GB1118] g_var_s_alias has unknown type; cast it to its declared type
-
--  gdb.base/symtab-search-order.exp
--    [PA1002] odd, why is clang different here?
 
    gdb.base/vla-optimized-out.exp
      [PA1002] Sounds like -flto optimized out the function.
@@ -157,7 +137,6 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
      [PA1002] maybe it was not emitted even at -O0?
      [GB1118] if so it's low-hanging fruit
 
--  gdb.cp/classes.exp
 +  gdb.cp/call-method-register.exp
    gdb.cp/converts.exp
      [PA1002] function not emitted?
@@ -219,11 +198,6 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
 
    gdb.dwarf2/dw2-skip-prologue.exp
    gdb.dwarf2/dw2-unresolved.exp
--  gdb.fortran/module.exp
--  gdb.fortran/nested-funcs-2.exp
--  gdb.fortran/print-formatted.exp
--  gdb.fortran/whatis_type.exp
--  gdb.guile/scm-pretty-print.exp
    gdb.guile/scm-symtab.exp
    gdb.linespec/cp-completion-aliases.exp
      [PA1002] missing symbols?
@@ -233,7 +207,6 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
 
    gdb.linespec/cpcompletion.exp
    gdb.linespec/macro-relative.exp
--  gdb.linespec/skip-two.exp
    gdb.mi/dw2-ref-missing-frame.exp
    gdb.mi/mi-catch-cpp-exceptions.exp
      [GB1002] Fails almost every testcase b/c line numbers off-by-one
@@ -243,28 +216,12 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
      [GB1002] Interpretation of types?
      [GB1118] c.f. gdb.base/dprintf.exp (same issue?)
 
--  gdb.mi/mi-file.exp
--    [PA1002] Maybe bad line info?  Just guessing.
-
--  gdb.mi/mi-fortran-modules.exp
--  gdb.mi/mi-fullname-deleted.exp
--    [PA1002] Maybe bad line info?  Just guessing.
-
    gdb.mi/mi-sym-info.exp
      [GB1002] GDB couldn't find symbols or locals?
      [PA1002] Missing symbols
 
--  gdb.mi/mi-var-child-f.exp
--    [GB1002] GDB couldn't find symbols or locals?
-
    gdb.mi/mi-var-cp.exp
      [PA1002] Probably missing symbols again
-
--  gdb.mi/mi-vla-fortran.exp
--    [GB1002] type printing?
--    [PA1002] I'm not even sure how that turned out different,
--    [PA1002] was clang really involved here?
--    [GBNOV?] it's the fortran compiler detection thing
 
    gdb.mi/mi-watch.exp
      [PA1002] I'd guess just different line info.
@@ -277,27 +234,18 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
      [PA1023] For me, it's always GDB failing to stop at a breakpoint
      [PA1023] set by line number
 
--  gdb.multi/watchpoint-multi-exit.exp
--    [PA1002] Yet another case of missing symbol?
-
    gdb.opt/clobbered-registers-O2.exp
      [GB1118] Program received signal SIGSEGV, Segmentation fault.
-
--  gdb.python/py-as-string.exp
--    [PA1002] Yet again missing symbols?
 
    gdb.python/py-explore-cc.exp
      [PA1002] Different line info?
 
    gdb.python/py-finish-breakpoint2.exp
--  gdb.python/py-format-string.exp
    gdb.python/py-objfile.exp
      [PA1002] more missing symbols / types.
 
--  gdb.python/py-symbol.exp
    gdb.python/py-symtab.exp
    gdb.python/python.exp
-
    gdb.reverse/break-precsave.exp
      [PA1002] Again with bad/different line info.
      [PA1002] Looks like most of the failures under gdb.reverse/
@@ -321,7 +269,4 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
 
 +  gdb.server/solib-list.exp
    gdb.stabs/gdb11479.exp
--  gdb.threads/omp-par-scope.exp
--    [PA1002] missing symbols
 
--  gdb.threads/tls-so_extern.exp
