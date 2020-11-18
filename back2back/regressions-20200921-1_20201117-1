@@ -34,7 +34,7 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
    gdb.arch/i386-avx.exp
      [PA1002] SIGSEGV... hmm, really strange, and bad
 
-+  gdb.base/attach.exp
+   gdb.base/attach.exp
      [PA1015] Fedora/RHEL gcc output build ids by default
      [PA1015] upstream GCC does not
      [PA1015] Maybe we should try compiling the program with explicit
@@ -45,7 +45,7 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
    gdb.base/call-ar-st.exp
    gdb.base/complex-parts.exp
    gdb.base/consecutive.exp
-+  gdb.base/coredump-filter-build-id.exp
+   gdb.base/coredump-filter-build-id.exp
    gdb.base/dprintf.exp
      [PA1002] this may be a testcase bug for assuming debug info.
      [GB1118] c.f. gdb.mi/mi-dprintf.exp (same issue?)
@@ -60,7 +60,7 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
    gdb.base/maint.exp
      [PA1002] sounds like missing symbols.
 
-+  gdb.base/msym-bp-shl.exp
+   gdb.base/msym-bp-shl.exp
      [GB1118] caused by commit 557fc25 luis.machado@linaro.org Oct 14??
      [GB1118] c.f. gdb.base/msym-lang.exp, which failed in 20200921
      [GB1118] not in 20201117 (because Luis's commit fixed it?)
@@ -70,7 +70,7 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
      [PA1002] clang is supposed to be ABI compatible, what changes
      [PA1002] here compared to GCC?
 
-+  gdb.base/sepdebug.exp
+   gdb.base/sepdebug.exp
    gdb.base/setvar.exp
 
    gdb.base/shlib-call.exp
@@ -137,7 +137,7 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
      [PA1002] maybe it was not emitted even at -O0?
      [GB1118] if so it's low-hanging fruit
 
-+  gdb.cp/call-method-register.exp
+   gdb.cp/call-method-register.exp
    gdb.cp/converts.exp
      [PA1002] function not emitted?
 
@@ -267,6 +267,6 @@ PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
      [PA1002] with more of the same line info issues, though, e.g.
      [PA1002] FAIL: gdb.reverse/break-precsave.exp: BP at end of main
 
-+  gdb.server/solib-list.exp
+   gdb.server/solib-list.exp
    gdb.stabs/gdb11479.exp
 
