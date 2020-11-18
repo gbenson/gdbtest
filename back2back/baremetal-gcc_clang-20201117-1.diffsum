@@ -1,0 +1,223 @@
+
+            IMPROVED   10   0.5%
+           REGRESSED  103   5.6%
+          EQUIVALENT    1   0.1%
+         TEST_BOMBED   31   1.7%
+        TEST_SKIPPED   53   2.9%
+  SKIPPED_EQUIVALENT    2   0.1%
+           IDENTICAL 1645  89.2%
+  ================================
+               TOTAL 1845 100.0%
+
+IMPROVED:
+  gdb.base/eh_return.exp
+  gdb.base/restore.exp
+  gdb.base/stack-protector.exp
+  gdb.base/store.exp
+  gdb.base/whatis-ptype-typedefs.exp
+  gdb.cp/ctti.exp
+  gdb.cp/step-and-next-inline.exp
+  gdb.cp/temargs.exp
+  gdb.linespec/cp-replace-typedefs-ns-template.exp
+  gdb.opt/inline-cmds.exp
+
+REGRESSED:
+  gdb.arch/disp-step-insn-reloc.exp
+  gdb.arch/i386-avx.exp
+  gdb.base/attach.exp
+  gdb.base/break-caller-line.exp
+  gdb.base/call-ar-st.exp
+  gdb.base/complex-parts.exp
+  gdb.base/consecutive.exp
+  gdb.base/coredump-filter-build-id.exp
+  gdb.base/dprintf.exp
+  gdb.base/endianity.exp
+  gdb.base/foll-exec.exp
+  gdb.base/info-program.exp
+  gdb.base/info-types-c++.exp
+  gdb.base/macscp.exp
+  gdb.base/maint.exp
+  gdb.base/msym-bp-shl.exp
+  gdb.base/nodebug.exp
+  gdb.base/ptype-offsets.exp
+  gdb.base/sepdebug.exp
+  gdb.base/setvar.exp
+  gdb.base/shlib-call.exp
+  gdb.base/skip-inline.exp
+  gdb.base/skip-solib.exp
+  gdb.base/skip.exp
+  gdb.base/so-impl-ld.exp
+  gdb.base/style.exp
+  gdb.base/symbol-alias.exp
+  gdb.base/vla-optimized-out.exp
+  gdb.base/vla-ptr.exp
+  gdb.base/watchpoint.exp
+  gdb.btrace/delta.exp
+  gdb.btrace/exception.exp
+  gdb.btrace/function_call_history.exp
+  gdb.btrace/rn-dl-bind.exp
+  gdb.compile/compile-cplus-anonymous.exp
+  gdb.compile/compile-cplus-inherit.exp
+  gdb.compile/compile-cplus-member.exp
+  gdb.compile/compile-cplus-method.exp
+  gdb.compile/compile-cplus-namespace.exp
+  gdb.compile/compile-cplus-nested.exp
+  gdb.compile/compile-cplus-virtual.exp
+  gdb.compile/compile-cplus.exp
+  gdb.compile/compile-ops.exp
+  gdb.compile/compile-setjmp.exp
+  gdb.compile/compile-tls.exp
+  gdb.compile/compile.exp
+  gdb.cp/align.exp
+  gdb.cp/anon-struct.exp
+  gdb.cp/bs15503.exp
+  gdb.cp/call-method-register.exp
+  gdb.cp/converts.exp
+  gdb.cp/derivation.exp
+  gdb.cp/impl-this.exp
+  gdb.cp/koenig.exp
+  gdb.cp/m-static.exp
+  gdb.cp/mb-ctor.exp
+  gdb.cp/nsusing.exp
+  gdb.cp/pass-by-ref-2.exp
+  gdb.cp/pass-by-ref.exp
+  gdb.cp/ptype-flags.exp
+  gdb.cp/templates.exp
+  gdb.cp/virtbase2.exp
+  gdb.dwarf2/dw2-abs-hi-pc.exp
+  gdb.dwarf2/dw2-case-insensitive.exp
+  gdb.dwarf2/dw2-cp-infcall-ref-static.exp
+  gdb.dwarf2/dw2-dir-file-name.exp
+  gdb.dwarf2/dw2-entry-value.exp
+  gdb.dwarf2/dw2-inline-param.exp
+  gdb.dwarf2/dw2-noloc.exp
+  gdb.dwarf2/dw2-param-error.exp
+  gdb.dwarf2/dw2-ref-missing-frame.exp
+  gdb.dwarf2/dw2-skip-prologue.exp
+  gdb.dwarf2/dw2-unresolved.exp
+  gdb.guile/scm-symtab.exp
+  gdb.linespec/cp-completion-aliases.exp
+  gdb.linespec/cpcompletion.exp
+  gdb.linespec/macro-relative.exp
+  gdb.mi/dw2-ref-missing-frame.exp
+  gdb.mi/mi-catch-cpp-exceptions.exp
+  gdb.mi/mi-dprintf.exp
+  gdb.mi/mi-sym-info.exp
+  gdb.mi/mi-var-cp.exp
+  gdb.mi/mi-watch.exp
+  gdb.mi/user-selected-context-sync.exp
+  gdb.opt/clobbered-registers-O2.exp
+  gdb.python/py-explore-cc.exp
+  gdb.python/py-finish-breakpoint2.exp
+  gdb.python/py-objfile.exp
+  gdb.python/py-symtab.exp
+  gdb.python/python.exp
+  gdb.reverse/break-precsave.exp
+  gdb.reverse/break-reverse.exp
+  gdb.reverse/consecutive-precsave.exp
+  gdb.reverse/consecutive-reverse.exp
+  gdb.reverse/finish-precsave.exp
+  gdb.reverse/insn-reverse.exp
+  gdb.reverse/solib-precsave.exp
+  gdb.reverse/solib-reverse.exp
+  gdb.reverse/step-precsave.exp
+  gdb.reverse/step-reverse.exp
+  gdb.reverse/watch-precsave.exp
+  gdb.server/solib-list.exp
+  gdb.stabs/gdb11479.exp
+
+EQUIVALENT:
+  gdb.base/condbreak-multi-context.exp
+
+TEST_BOMBED:
+  gdb.base/dfp-test.exp
+  gdb.base/gdb11530.exp
+  gdb.base/morestack.exp
+  gdb.base/prelink.exp
+  gdb.base/psym-external-decl.exp
+  gdb.base/solib-weak.exp
+  gdb.dwarf2/dw2-disasm-over-non-stmt.exp
+  gdb.dwarf2/dw2-inheritance.exp
+  gdb.dwarf2/dw2-inline-header-1.exp
+  gdb.dwarf2/dw2-inline-header-2.exp
+  gdb.dwarf2/dw2-inline-header-3.exp
+  gdb.dwarf2/dw2-inline-many-frames.exp
+  gdb.dwarf2/dw2-inline-small-func.exp
+  gdb.dwarf2/dw2-inline-stepping.exp
+  gdb.dwarf2/dw2-is-stmt-2.exp
+  gdb.dwarf2/dw2-is-stmt.exp
+  gdb.dwarf2/dw2-line-number-zero.exp
+  gdb.dwarf2/dw2-main-no-line-number.exp
+  gdb.dwarf2/dw2-modula2-self-type.exp
+  gdb.dwarf2/dw2-ranges-base.exp
+  gdb.dwarf2/dw2-ranges-overlap.exp
+  gdb.dwarf2/dw2-ranges.exp
+  gdb.dwarf2/dw2-simple-locdesc.exp
+  gdb.dwarf2/dw2-vendor-extended-opcode.exp
+  gdb.dwarf2/dw5-rnglist-test.exp
+  gdb.dwarf2/fission-loclists-pie.exp
+  gdb.dwarf2/fission-loclists.exp
+  gdb.dwarf2/fission-multi-cu.exp
+  gdb.dwarf2/fission-reread.exp
+  gdb.dwarf2/pr11465.exp
+  gdb.linespec/break-asm-file.exp
+
+TEST_SKIPPED:
+  gdb.arch/amd64-entry-value.exp
+  gdb.arch/amd64-prologue-xmm.exp
+  gdb.base/floatn.exp
+  gdb.base/gdbindex-stabs.exp
+  gdb.base/gold-gdb-index.exp
+  gdb.base/index-cache-load-twice.exp
+  gdb.base/index-cache.exp
+  gdb.base/info-macros.exp
+  gdb.base/infoline-reloc-main-from-zero.exp
+  gdb.base/jit-elf-so.exp
+  gdb.base/jit-elf.exp
+  gdb.base/label-without-address.exp
+  gdb.base/nested-subp1.exp
+  gdb.base/nested-subp2.exp
+  gdb.base/nested-subp3.exp
+  gdb.base/siginfo-thread.exp
+  gdb.base/step-indirect-call-thunk.exp
+  gdb.base/vla-struct-fields.exp
+  gdb.btrace/unknown_functions.exp
+  gdb.cp/class2.exp
+  gdb.cp/classes.exp
+  gdb.dwarf2/clang-debug-names-2.exp
+  gdb.dwarf2/clang-debug-names.exp
+  gdb.dwarf2/dw2-anon-mptr.exp
+  gdb.dwarf2/dw2-ranges-func.exp
+  gdb.dwarf2/dw2-ranges-psym.exp
+  gdb.dwarf2/dw2-strp.exp
+  gdb.dwarf2/typeddwarf.exp
+  gdb.mi/gdb669.exp
+  gdb.mi/mi-pending.exp
+  gdb.mi/mi-pthreads.exp
+  gdb.mi/mi-threads-interrupt.exp
+  gdb.mi/mi2-amd64-entry-value.exp
+  gdb.opt/inline-small-func.exp
+  gdb.reverse/step-indirect-call-thunk.exp
+  gdb.server/sysroot.exp
+  gdb.stabs/weird.exp
+  gdb.threads/bp_in_thread.exp
+  gdb.threads/check-libthread-db.exp
+  gdb.threads/dlopen-libpthread.exp
+  gdb.threads/hand-call-in-threads.exp
+  gdb.threads/interrupted-hand-call.exp
+  gdb.threads/multiple-successive-infcall.exp
+  gdb.threads/omp-par-scope.exp
+  gdb.threads/pthread_cond_wait.exp
+  gdb.threads/queue-signal.exp
+  gdb.threads/signal-command-handle-nopass.exp
+  gdb.threads/signal-command-multiple-signals-pending.exp
+  gdb.threads/sigthread.exp
+  gdb.threads/thread-specific.exp
+  gdb.threads/thread-unwindonsignal.exp
+  gdb.trace/ftrace-lock.exp
+  gdb.trace/trace-mt.exp
+
+SKIPPED_EQUIVALENT:
+  gdb.trace/tracefile-pseudo-reg.exp
+  gdb.trace/unavailable-dwarf-piece.exp
+
