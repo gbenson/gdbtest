@@ -1,6 +1,14 @@
-GB1002 = <20201002164926.GA17343@blade.nx> Fri, 2 Oct 2020 17:49:26 +0100
+GB1002 = <20201002164926.GA17343@blade.nx> \
+         Fri, 2 Oct 2020 17:49:26 +0100
 PA1002 = <b4eff009-9c1d-7c1b-d7f9-8b5a663741c0@redhat.com> \
          Fri, 2 Oct 2020 19:59:26 +0100
+PA1015 = <4246bdf8-2245-15af-ef69-1d68fdc545a8@redhat.com> \
+         Thu, 15 Oct 2020 14:58:40 +0100
+GB1019 = <20201019171328.GA22730@blade.nx> \
+         Mon, 19 Oct 2020 18:13:28 +0100
+PA1023 = <661aa031-2486-ae38-6346-6709c7510443@redhat.com> \
+       	 Fri, 23 Oct 2020 15:46:49 +0100
+
 
 [PA1002] One of the main patterns I'm seeing is that GDB is failing to
 [PA1002] find symbols in the program.  It explains a good number of
@@ -27,6 +35,12 @@ PA1002 = <b4eff009-9c1d-7c1b-d7f9-8b5a663741c0@redhat.com> \
      [PA1002] SIGSEGV... hmm, really strange, and bad
 -  gdb.base/annota1.exp
 +  gdb.base/attach.exp
+     [PA1015] Fedora/RHEL gcc output build ids by default
+     [PA1015] upstream GCC does not
+     [PA1015] Maybe we should try compiling the program with explicit
+     [PA1015] -Wl,--build-id .  And also make the testcase handle the
+     [PA1015] missing note gracefully.
+
    gdb.base/break-caller-line.exp
    gdb.base/call-ar-st.exp
    gdb.base/complex-parts.exp
@@ -259,6 +273,9 @@ PA1002 = <b4eff009-9c1d-7c1b-d7f9-8b5a663741c0@redhat.com> \
      [GB1002] GDB couldn't find symbols or locals?
      [PA1002] I suspect it's line info related
      [PA1002] Maybe just different line info?
+     [GB1019] with clang it fails, but in different ways each time??
+     [PA1023] For me, it's always GDB failing to stop at a breakpoint
+     [PA1023] set by line number
 
 -  gdb.multi/watchpoint-multi-exit.exp
 -    [PA1002] Yet another case of missing symbol?
