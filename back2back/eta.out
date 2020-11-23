@@ -1,22 +1,47 @@
-1069 * -> IDENTICAL
-  1 EQUIVALENT -> IMPROVED
-  4 EQUIVALENT -> NOT_PRESENT
-  6 EQUIVALENT -> REGRESSED
-  6 EQUIVALENT -> TEST_BOMBED
-  3 EQUIVALENT -> TEST_SKIPPED
-  1 IDENTICAL -> NOT_PRESENT
-  4 IDENTICAL -> REGRESSED
-  1 IDENTICAL -> TEST_BOMBED
-  4 IMPROVED -> REGRESSED
-  1 NOT_PRESENT -> EQUIVALENT
- 90 NOT_PRESENT -> IDENTICAL
-  3 NOT_PRESENT -> IMPROVED
-  4 NOT_PRESENT -> REGRESSED
- 13 NOT_PRESENT -> TEST_BOMBED
-  9 NOT_PRESENT -> TEST_SKIPPED
-  1 REGRESSED -> IMPROVED
-  3 REGRESSED -> NOT_PRESENT
-  4 TEST_BOMBED -> TEST_SKIPPED
-  3 TEST_SKIPPED -> NOT_PRESENT
- 11 TEST_SKIPPED -> REGRESSED
-615 UNCHANGED
+diffsum-20200227-all lists 1736 tests
+
+of those:
+
+  1069 tests improved to IDENTICAL
+     4 BOMBED tests improved to SKIPPED
+
+    11 skipped tests partially improved to REGRESEED
+    16 equivalent tests evaluated to !IDENTICAL
+
+     5 tests regressed from IDENTICAL
+
+   615 tests are unchanged
+     5 tests flipped IMPROVED <=> REGRESSED (i.e. unchanged)
+
+    15 tests vanished from upstream
+   120 tests appeared from upstream, of which
+          91 are identical/equivalent
+      and 29 need attention
+
+[1736 - 15 + 120 = 1841, but diffsum-20201117-all lists 1845,
+so I made an error somewhere]
+
+
+1069+4-5 = 1068 improvements
+            620 unchanged
+
+	    IMPROVED   10   0.5%
+           REGRESSED  103   5.6%
+          EQUIVALENT    1   0.1%
+         TEST_BOMBED   31   1.7%
+        TEST_SKIPPED   53   2.9%
+  SKIPPED_EQUIVALENT    2   0.1%
+           IDENTICAL 1645  89.2%
+  ================================
+               TOTAL 1845 100.0%
+
+@1047:
+   not IDENTICAL = 1845-1645 = 200 testcases
+   5 weeks = 25 days
+   200 testcases in 25 days = 8 testcases/day
+
+   20201117 - 20200227 = 274 days ~= 196 working days total,
+   (i.e. assuming no PTO or absence, and no days spent doing
+   other work)
+
+   1068 improvements / 8 testcases/day = 134 days
