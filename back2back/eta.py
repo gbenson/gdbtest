@@ -36,6 +36,18 @@ class Tabulator(object):
             self.transitions[t] = []
         self.transitions[t].append(testname)
 
+    def collapsed_items(self):
+        transitions = {}
+        incl = " -> IDENTICAL"
+        excl = NOT_PRESENT + incl
+        for t, tests in sorted(self.transitions.items()):
+            if t.endswith(incl) and t != excl:
+                t = "*" + incl
+            if t not in transitions:
+                transitions[t] = []
+            transitions[t].extend(tests)
+        return transitions.items()
+
 def main():
     t = Tabulator()
     a, b = map(read_ds_a, sorted(glob.glob("diffsum-*-all")))
@@ -46,7 +58,7 @@ def main():
     for testname, b_status in b.items():
         t.tabulate(testname, a_status, b_status)
     #print(len(t.transitions))
-    for transition, tests in sorted(t.transitions.items()):
+    for transition, tests in sorted(t.collapsed_items()):
         print("%3d %s" % (len(tests), transition))
 
 if __name__ == "__main__":
